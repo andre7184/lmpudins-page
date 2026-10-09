@@ -1,0 +1,11 @@
+services:
+  lm-pudins-page:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_WHATSAPP_NUMBER: ${VITE_WHATSAPP_NUMBER:-}
+    container_name: lm-pudins-page
+    ports:
+      - "${PORTA_SITE:-8080}:80"
+    restart: unless-stopped
