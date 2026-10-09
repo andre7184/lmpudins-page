@@ -33,6 +33,61 @@ A LM Pudins quer apresentar seus pudins artesanais de forma memorável, unindo a
 - O número oficial do WhatsApp, links sociais e informações comerciais precisam ser configurados.
 - Carrinho, checkout, pagamentos e gestão de pedidos não estão implementados.
 
+## Executar com Docker
+
+A aplicação pode ser construída e executada em um container. O Docker faz o build do React/Vite e entrega os arquivos estáticos usando Nginx.
+
+### Pré-requisitos
+
+- Docker Engine ou Docker Desktop instalado.
+- Docker Compose v2 (comando `docker compose`).
+
+### Iniciar o site
+
+Na raiz do repositório, execute:
+
+```bash
+docker compose up --build -d
+```
+
+Abra [http://localhost:8080](http://localhost:8080).
+
+Para acompanhar os logs:
+
+```bash
+docker compose logs -f
+```
+
+Para parar e remover o container:
+
+```bash
+docker compose down
+```
+
+### Configurações opcionais
+
+Por padrão, o site fica disponível na porta `8080`. Para usar outra porta, crie um arquivo `.env` na raiz do projeto:
+
+```env
+PORTA_SITE=8090
+VITE_WHATSAPP_NUMBER=55DDDNUMERO
+```
+
+Substitua `55DDDNUMERO` pelo número oficial da marca, em formato internacional e somente com dígitos. Depois, reconstrua a imagem para aplicar a configuração:
+
+```bash
+docker compose up --build -d
+```
+
+A variável `VITE_WHATSAPP_NUMBER` é usada durante o build do frontend; alterar o arquivo `.env` sem reconstruir a imagem não atualiza o valor incorporado ao site. Não coloque senhas ou segredos em variáveis `VITE_*`, pois elas são públicas no frontend.
+
+### Arquivos Docker
+
+- `Dockerfile`: build em múltiplas etapas (Node.js para compilar e Nginx para servir).
+- `docker-compose.yml`: inicialização simples, porta configurável e reinício automático.
+- `nginx.conf`: entrega de arquivos estáticos, fallback para rotas do frontend e cabeçalhos básicos de segurança.
+- `.dockerignore`: evita copiar dependências locais e arquivos desnecessários para a imagem.
+
 ## Executar localmente
 
 Requisitos: Node.js em versão LTS e npm.
