@@ -1,13 +1,64 @@
 # LM Pudins — Experiência Digital Premium
 
-> **Proposta e visão do produto** para a landing page da LM Pudins.  
-> Documento de planejamento: descreve a identidade, a experiência desejada, a estrutura funcional e uma direção técnica. Os itens descritos como planejados não devem ser entendidos como funcionalidades já implementadas.
+> **Visão do produto + guia da primeira versão visual.** Este README registra a direção criativa, o escopo funcional e como executar o projeto localmente. A landing page inicial já está estruturada em React; imagens fotográficas finais e integrações comerciais ainda são etapas pendentes.
 
 A LM Pudins quer apresentar seus pudins artesanais de forma memorável, unindo a identidade visual existente a uma experiência digital sofisticada, sensorial e preparada para evoluir futuramente para uma loja virtual.
 
 **Repositório:** https://github.com/andre7184/lmpudins-page
 
 ---
+
+
+
+## Status atual do repositório
+
+### Já criado
+
+- Aplicação React com Vite.
+- Landing page responsiva com estética bordô, dourado e chocolate.
+- Hero com ilustração decorativa de pudim construída em CSS e sensação de profundidade.
+- Sete cards de sabores e filtros por perfil.
+- Janela de detalhes de produto com descrição e ingredientes.
+- Animações de entrada, flutuação e microinterações, com respeito a `prefers-reduced-motion`.
+- Seções de marca, experiência, chamada para contato e rodapé.
+- Formulário de consulta preparado para abrir o WhatsApp quando a variável de ambiente estiver configurada.
+- Pasta reservada para as fotografias finais e documentação sobre os arquivos esperados.
+
+### Ainda pendente
+
+- As fotos enviadas na conversa **não foram transferidas para o repositório**.
+- O visual do pudim é, nesta versão, uma ilustração CSS temporária; não deve ser confundida com fotografia real do produto nem com um modelo 3D físico.
+- A geração de novas imagens não ficou disponível durante esta etapa.
+- Não foi executado um build de validação dentro deste fluxo; rode os comandos abaixo antes de publicar.
+- O número oficial do WhatsApp, links sociais e informações comerciais precisam ser configurados.
+- Carrinho, checkout, pagamentos e gestão de pedidos não estão implementados.
+
+## Executar localmente
+
+Requisitos: Node.js em versão LTS e npm.
+
+```bash
+npm install
+npm run dev
+```
+
+Para validar a versão de produção:
+
+```bash
+npm run build
+npm run preview
+```
+
+### Configurar o WhatsApp
+
+Crie um arquivo `.env.local` na raiz e defina o número oficial em formato internacional, somente com dígitos e código do país, sem espaços ou sinais:
+
+```env
+VITE_WHATSAPP_NUMBER=55DDDNUMERO
+```
+
+Substitua o exemplo pelo número real da LM Pudins. Não publique credenciais ou dados privados em variáveis `VITE_*`; elas são incorporadas ao frontend.
+
 
 ## 1. Visão do projeto
 
