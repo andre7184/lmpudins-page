@@ -4,8 +4,7 @@ import { products } from './products.js';
 
 function Logo({ compact = false }) {
   return <a className={`brand ${compact ? 'brand-compact' : ''}`} href="#inicio" aria-label="LM Pudins — início">
-    <span className="brand-monogram">LM</span>
-    <span className="brand-name">Pudins<span>ARTESANAIS</span></span>
+    <img className="brand-image" src="/images/Logo%20horizontal.png" alt="LM Pudins" />
   </a>;
 }
 
@@ -132,14 +131,14 @@ function App() {
       </section>
 
       <section className="intro-section" id="essencia">
-        <div className="intro-mark">LM<span>✦</span></div>
+        <div className="intro-mark"><img src="/images/Logo%20circular.png" alt="Logo circular da LM Pudins" /></div>
         <div className="intro-copy reveal"><span className="eyebrow">O PRAZER ESTÁ NOS DETALHES</span><h2>Não é só sobremesa.<br /><em>É o momento todo.</em></h2></div>
         <p className="intro-description reveal">Do brilho delicado do caramelo à textura macia de cada fatia, cada pudim é um convite para desacelerar e saborear o que realmente importa.</p>
       </section>
 
       <section className="catalog-section" id="sabores">
         <div className="section-heading reveal"><div><span className="eyebrow eyebrow-gold">A COLEÇÃO LM</span><h2>Encontre seu <em>favorito.</em></h2></div><p>Sete personalidades, uma mesma paixão por sobremesas que ficam na memória.</p></div>
-        <div className="catalog-toolbar"><span className="catalog-count">07 SABORES PARA DESCOBRIR</span><div className="filter-list" role="group" aria-label="Filtrar sabores">{filters.map((filter) => <button key={filter} className={activeFilter === filter ? 'filter-button filter-active' : 'filter-button'} onClick={() => setActiveFilter(filter)}>{filter}</button>)}</div></div>
+        <div className="catalog-toolbar"><span className="catalog-count" aria-live="polite">{String(visibleProducts.length).padStart(2, '0')} {visibleProducts.length === 1 ? 'SABOR DISPONÍVEL' : 'SABORES PARA DESCOBRIR'}</span><div className="filter-list" role="group" aria-label="Filtrar sabores">{filters.map((filter) => <button type="button" key={filter} aria-pressed={activeFilter === filter} className={activeFilter === filter ? 'filter-button filter-active' : 'filter-button'} onClick={() => setActiveFilter(filter)}>{filter}</button>)}</div></div>
         <div className="product-grid">{visibleProducts.map((product) => <ProductCard key={product.id} product={product} onOpen={setSelectedProduct} />)}</div>
       </section>
 
