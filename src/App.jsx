@@ -89,7 +89,7 @@ function App() {
     }), { threshold: 0.12 });
     document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
     return () => { window.removeEventListener('scroll', onScroll); observer.disconnect(); };
-  }, []);
+  }, [activeFilter]);
   const closeMenu = () => setMenuOpen(false);
   const handleContact = (event) => {
     event.preventDefault();
