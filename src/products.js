@@ -7,6 +7,7 @@ export const products = [
     description: 'Textura cremosa, geleia caseira de frutas vermelhas e o toque delicado do leite em pó.',
     ingredients: 'Caramelo, leite integral, creme de leite, ovos, açúcar, leite em pó, extrato de baunilha e geleia caseira de frutas vermelhas.',
     tone: 'berry',
+    image: '/images/pudins/frutas-vermelhas.jfif',
     accent: '#c52e50',
     tag: 'Frutado & delicado'
   },
@@ -18,6 +19,7 @@ export const products = [
     description: 'Um pudim leve e aromático, equilibrando o doce do caramelo com o toque cítrico da laranja.',
     ingredients: 'Caramelo, leite integral, creme de leite, ovos, açúcar, extrato de baunilha, raspas de laranja e geleia caseira de laranja.',
     tone: 'orange',
+    image: '/images/pudins/laranja.jfif',
     accent: '#f28a28',
     tag: 'Cítrico & luminoso'
   },
@@ -29,6 +31,7 @@ export const products = [
     description: 'O amargor do café encontra a profundidade do chocolate em uma combinação intensa e sofisticada.',
     ingredients: 'Caramelo, leite integral, creme de leite, ovos, açúcar, extrato de baunilha, chocolate em pó 70%, café solúvel e raspas de chocolate.',
     tone: 'coffee',
+    image: '/images/pudins/chocolate-cafe.jfif',
     accent: '#6f3025',
     tag: 'Intenso & sofisticado'
   },
@@ -40,6 +43,7 @@ export const products = [
     description: 'Uma versão de inspiração brasileira, adoçada com redução de melaço caseiro e finalizada com notas cítricas.',
     ingredients: 'Caramelo de melaço de cana, leite integral, creme de leite, ovos, melaço de cana, extrato de baunilha e raspas de limão.',
     tone: 'cane',
+    image: '/images/pudins/caldo-de-cana.jfif',
     accent: '#bd8a36',
     tag: 'Brasileiro & original'
   },
@@ -51,6 +55,7 @@ export const products = [
     description: 'Acidez suavizada pelo leite em pó, com o contraste de textura das sementes frescas de maracujá.',
     ingredients: 'Caramelo, leite integral, creme de leite, ovos, açúcar, leite em pó integral, extrato de baunilha, sal, geleia caseira e sementes frescas de maracujá.',
     tone: 'passion',
+    image: '/images/pudins/maracuja.jfif',
     accent: '#e9b52c',
     tag: 'Tropical & vibrante'
   },
@@ -62,6 +67,7 @@ export const products = [
     description: 'Extremamente cremoso, doce na medida e finalizado com uma delicada cobertura em pó.',
     ingredients: 'Caramelo, leite condensado, creme de leite, leite integral, leite em pó integral, ovos, extrato de baunilha e sal.',
     tone: 'cream',
+    image: '/images/pudins/quatro-leites.jfif',
     accent: '#e8d4a2',
     tag: 'Cremoso & aveludado'
   },
@@ -73,6 +79,7 @@ export const products = [
     description: 'Pudim com cream cheese e uma nota levemente salgada, contrastando com a doçura da goiabada.',
     ingredients: 'Caramelo, leite integral, creme de leite, ovos, açúcar, cream cheese, extrato de baunilha, sal, geleia caseira de goiabada e queijo opcional para decoração.',
     tone: 'guava',
+    image: '/images/pudins/romeu-julieta.jfif',
     accent: '#b72b42',
     tag: 'Clássico reinventado'
   }
