@@ -1,0 +1,40 @@
+name: Deploy LM Pudins to VPS
+
+on:
+  push:
+    branches:
+      - deploy-vps-traefik
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy through SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: deployer
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -eu
+            mkdir -p "$HOME/lmpudins-page"
+            if [ -d "$HOME/lmpudins-page/.git" ]; then
+              cd "$HOME/lmpudins-page"
+              git fetch origin
+              git checkout deploy-vps-traefik
+              git pull --ff-only origin deploy-vps-traefik
+            else
+              rmdir "$HOME/lmpudins-page" 2>/dev/null || true
+              git clone --branch deploy-vps-traefik https://github.com/andre7184/lmpudins-page.git "$HOME/lmpudins-page"
+              cd "$HOME/lmpudins-page"
+            fi
+
+            # Optional: configure VITE_WHATSAPP_NUMBER in ~/lmpudins-page/.env on the VPS.
+            docker compose up -d --build --remove-orphans
+            docker image prune -f
