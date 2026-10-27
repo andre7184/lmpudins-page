@@ -600,3 +600,37 @@ A arquitetura será pensada para evoluir de uma landing page para uma loja virtu
 ---
 
 *Documento de visão e planejamento do projeto LM Pudins.*
+
+
+## Publicar na VPS com Traefik
+
+A branch `deploy-vps-traefik` contém a configuração de publicação do site em `https://www.lmpudins.com.br`. O serviço usa a rede Docker externa `traefik`, já utilizada pelos outros projetos desta infraestrutura, e não publica uma porta diretamente no host.
+
+### Pré-requisitos
+
+- O DNS de `www.lmpudins.com.br` deve apontar para o IP público da VPS.
+- O Traefik deve estar ativo e conectado à rede Docker externa `traefik`.
+- O usuário SSH `deployer` precisa conseguir executar Docker e Docker Compose e clonar repositórios públicos.
+- Configure os secrets deste repositório em **Settings → Secrets and variables → Actions**:
+  - `VPS_HOST`: endereço IP ou hostname SSH da VPS.
+  - `VPS_SSH_KEY`: chave privada SSH correspondente à chave autorizada para o usuário `deployer`.
+
+### Publicação automática
+
+O workflow `.github/workflows/deploy.yml` executa quando há push para `deploy-vps-traefik` e também pode ser iniciado manualmente pela aba **Actions**. Ele atualiza o checkout na VPS e executa `docker compose up -d --build`.
+
+O Compose configura o roteador HTTPS do Traefik para `www.lmpudins.com.br`, usando o resolvedor `letsencrypt`. A emissão do certificado depende de DNS correto, portas públicas 80/443 acessíveis e Traefik operacional.
+
+### WhatsApp opcional
+
+Se desejar configurar o botão de WhatsApp, crie ou edite o arquivo `~/lmpudins-page/.env` na VPS com:
+
+```env
+VITE_WHATSAPP_NUMBER=55DDDNUMERO
+```
+
+Use o número oficial em formato internacional, somente dígitos. Como essa variável é incorporada no build do frontend, execute novamente o workflow ou reconstrua o container após alterá-la. Não coloque senhas ou credenciais em variáveis `VITE_*`.
+
+### Domínios e outros projetos
+
+Esta configuração atende somente a `www.lmpudins.com.br`. Ela não altera o domínio raiz `lmpudins.com.br` e não configura nem modifica o subdomínio `pedidos`, que permanece sob responsabilidade do outro projeto. O Traefik central e seus arquivos de certificados não são alterados por este repositório.
