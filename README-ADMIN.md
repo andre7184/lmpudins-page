@@ -17,6 +17,7 @@ O usuário inicial é criado apenas quando não existe usuário com aquele nome.
 - `GET /api/health`: verifica API e banco.
 - `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`.
 - `GET /api/products`: produtos publicados.
+- `POST /api/admin/uploads`: upload autenticado de imagem (JPG, PNG, WebP ou AVIF, máximo 5 MB); os arquivos ficam no volume persistente `lm_pudins_uploads` e são servidos em `/uploads/`.
 - `GET/POST /api/admin/products`, `PUT/DELETE /api/admin/products/:id`: operações administrativas autenticadas.
 
 ## Segurança e limites conhecidos
@@ -24,5 +25,5 @@ O usuário inicial é criado apenas quando não existe usuário com aquele nome.
 - Nunca publique o arquivo `.env` nem credenciais nos commits.
 - O banco não tem porta publicada para a internet; o acesso é pela rede Docker.
 - Use HTTPS no Traefik.
-- O formulário de nutrição aceita JSON e não substitui a revisão dos rótulos oficiais.
+- O formulário de nutrição aceita JSON e exibe os campos cadastrados nos detalhes do produto; os valores devem ser revisados com os rótulos oficiais.
 - Nesta primeira etapa o cadastro grava no banco; a ligação do catálogo React público a `GET /api/products`, o upload de imagens e a gestão de usuários serão concluídos nas próximas etapas.
