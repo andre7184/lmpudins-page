@@ -7,8 +7,10 @@ services:
         VITE_WHATSAPP_NUMBER: ${VITE_WHATSAPP_NUMBER:-}
     container_name: lm-pudins-page
     restart: unless-stopped
-    networks:
-      - traefik
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [traefik, app-internal]
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.lmpudins.rule=Host(`www.lmpudins.com.br`)"
@@ -17,6 +19,52 @@ services:
       - "traefik.http.routers.lmpudins.tls.certresolver=letsencrypt"
       - "traefik.http.services.lmpudins.loadbalancer.server.port=80"
 
+  api:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: lm-pudins-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      API_PORT: 3000
+      DATABASE_URL: ${DATABASE_URL:?Defina DATABASE_URL no arquivo .env}
+      SESSION_SECRET: ${SESSION_SECRET:?Defina SESSION_SECRET no arquivo .env}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:?Defina ADMIN_USERNAME no arquivo .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Defina ADMIN_PASSWORD no arquivo .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [app-internal]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  db:
+    image: postgres:16-alpine
+    container_name: lm-pudins-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lm_pudins}
+      POSTGRES_USER: ${POSTGRES_USER:-lm_pudins_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}
+    volumes:
+      - lm_pudins_db_data:/var/lib/postgresql/data
+    networks: [app-internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$${POSTGRES_USER}\" -d \"$$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  lm_pudins_db_data:
 networks:
   traefik:
     external: true
+  app-internal:
+    internal: true
