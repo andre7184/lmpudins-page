@@ -24,12 +24,33 @@ function DessertVisual({ tone = 'classic', large = false, powdered = false }) {
   </div>;
 }
 
+const productImages = {
+  'frutas-vermelhas': '/images/pudins/frutas-vermelhas.jfif',
+  'laranja': '/images/pudins/laranja.jfif',
+  'chocolate-cafe': '/images/pudins/chocolate-cafe.jfif',
+  'caldo-de-cana': '/images/pudins/caldo-de-cana.jfif',
+  'maracuja': '/images/pudins/maracuja.jfif',
+  'quatro-leites': '/images/pudins/quatro-leites.jfif',
+  'romeu-julieta': '/images/pudins/romeu-julieta.jfif'
+};
+
+function ProductPhoto({ product, className = '' }) {
+  return <img
+    className={`product-photo ${className}`}
+    src={productImages[product.id]}
+    alt={`Pudim artesanal de ${product.name}`}
+    loading="lazy"
+    decoding="async"
+    onError={(event) => { event.currentTarget.style.visibility = 'hidden'; }}
+  />;
+}
+
 function ProductCard({ product, onOpen }) {
   return <article className="product-card reveal" style={{ '--accent': product.accent }}>
     <button className="product-image-button" onClick={() => onOpen(product)} aria-label={`Ver detalhes de ${product.name}`}>
       <div className={`product-art art-${product.tone}`}>
         <span className="art-number">{product.number}</span>
-        <DessertVisual tone={product.tone} powdered={product.tone === 'cream'} />
+        <ProductPhoto product={product} />
         <span className="art-caption">{product.tag}</span>
       </div>
       <span className="round-arrow"><ArrowUpRight size={18} /></span>
@@ -55,7 +76,7 @@ function ProductModal({ product, onClose }) {
   return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
     <section className="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <button className="modal-close" onClick={onClose} aria-label="Fechar detalhes"><X /></button>
-      <div className={`modal-art art-${product.tone}`}><DessertVisual tone={product.tone} large powdered={product.tone === 'cream'} /></div>
+      <div className={`modal-art art-${product.tone}`}><ProductPhoto product={product} className="modal-photo" /></div>
       <div className="modal-copy">
         <span className="eyebrow">SABOR {product.number} · LM PUDINS</span>
         <h2 id="modal-title">{product.name}</h2>
@@ -123,7 +144,7 @@ function App() {
         <div className="hero-stage">
           <div className="orbit orbit-one" /><div className="orbit orbit-two" />
           <div className="hero-stamp"><span>FEITO COM</span><Heart size={17} fill="currentColor" /><span>CARINHO</span></div>
-          <DessertVisual tone="classic" large />
+          <img className="hero-photo" src="/images/campanha/hero-pudim.jfif" alt="Pudim artesanal com calda de caramelo" fetchPriority="high" />
           <div className="hero-note"><span className="note-rule" /><span>CREMOSIDADE<br /><strong>INESQUECÍVEL</strong></span></div>
           <div className="hero-floating floating-top">doce<br /><em>perfeição</em></div>
           <div className="hero-floating floating-bottom">LM <span>✦</span> PUDINS</div>
@@ -144,14 +165,14 @@ function App() {
       </section>
 
       <section className="feature-section" id="experiencia">
-        <div className="feature-art"><div className="feature-frame"><DessertVisual tone="berry" large /><span className="feature-vertical">UMA EXPERIÊNCIA SENSORIAL</span></div><span className="feature-number">01 <i>/ 03</i></span></div>
+        <div className="feature-art"><div className="feature-frame"><img className="feature-photo" src="/images/campanha/geleia-frutas.jfif" alt="Geleia artesanal de frutas para acompanhar os pudins" loading="lazy" /><span className="feature-vertical">UMA EXPERIÊNCIA SENSORIAL</span></div><span className="feature-number">01 <i>/ 03</i></span></div>
         <div className="feature-copy reveal"><span className="eyebrow eyebrow-gold">A PRIMEIRA IMPRESSÃO</span><h2>O brilho do caramelo.<br /><em>A arte do sabor.</em></h2><p>Uma calda brilhante que escorre suavemente, uma textura delicada e cores que convidam o olhar antes mesmo da primeira colherada.</p><div className="feature-points"><div><span><Check size={15} /></span><p><strong>Texturas que encantam</strong><small>Um visual tão especial quanto a experiência.</small></p></div><div><span><Check size={15} /></span><p><strong>Sabores com personalidade</strong><small>Do clássico às combinações mais vibrantes.</small></p></div></div><a className="text-link text-link-light" href="#sabores">Explore a coleção <ArrowRight size={15} /></a></div>
       </section>
 
       <section className="quote-section"><span className="quote-mark">“</span><p>Tem coisas que a gente prova.<br /><em>E tem coisas que a gente sente.</em></p><span className="quote-signature">LM PUDINS <i>✦</i></span></section>
 
       <section className="contact-section" id="pedidos">
-        <div className="contact-orb"><DessertVisual tone="classic" large /></div>
+        <div className="contact-orb"><img className="contact-photo" src="/images/campanha/detalhe-caramelo.jfif" alt="Detalhe da calda de caramelo artesanal" loading="lazy" /></div>
         <div className="contact-copy reveal"><span className="eyebrow eyebrow-gold">SEU PRÓXIMO MOMENTO ESPECIAL</span><h2>Vamos adoçar<br /><em>seu dia?</em></h2><p>Conte pra gente como podemos fazer parte do seu momento. Consulte os sabores e a disponibilidade diretamente com a LM Pudins.</p>
           <form className="contact-form" onSubmit={handleContact}><label htmlFor="contact-input">Seu WhatsApp ou e-mail</label><div className="contact-input-row"><input id="contact-input" value={contact} onChange={(e) => { setContact(e.target.value); setSubmitted(false); }} placeholder="Como podemos falar com você?" required /><button type="submit" aria-label="Enviar consulta"><ArrowRight /></button></div><small>Usaremos o contato apenas para encaminhar sua consulta. Configure o canal oficial antes da publicação.</small>{submitted && <p className="form-feedback" role="status">O formulário visual está pronto. Para receber consultas, configure VITE_WHATSAPP_NUMBER no ambiente de publicação.</p>}</form>
         </div>
