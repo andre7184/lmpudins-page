@@ -3,7 +3,7 @@ name: Deploy LM Pudins to VPS
 on:
   push:
     branches:
-      - versao_0-1
+      - main
   workflow_dispatch:
 
 permissions:
@@ -32,19 +32,19 @@ jobs:
             mkdir -p "$HOME/lmpudins.com.br"
 
             if [ -d "$SITE_DIR/.git" ]; then
-              echo "==> Repositorio existente; atualizando branch versao_0-1"
+              echo "==> Repositorio existente; atualizando branch main"
               cd "$SITE_DIR"
               git fetch origin
-              git checkout versao_0-1
-              git pull --ff-only origin versao_0-1
+              git checkout main
+              git pull --ff-only origin main
             else
               if [ -e "$SITE_DIR" ] && [ -n "$(find "$SITE_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
                 echo "ERRO: $SITE_DIR ja existe e nao esta vazio, mas nao contem .git. Nenhum arquivo foi apagado."
                 exit 1
               fi
 
-              echo "==> Clonando repositorio na branch versao_0-1 para $SITE_DIR"
-              git clone --branch versao_0-1 https://github.com/andre7184/lmpudins-page.git "$SITE_DIR"
+              echo "==> Clonando repositorio na branch main para $SITE_DIR"
+              git clone --branch main https://github.com/andre7184/lmpudins-page.git "$SITE_DIR"
               cd "$SITE_DIR"
             fi
 
