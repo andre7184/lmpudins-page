@@ -4,8 +4,7 @@ import { products } from './products.js';
 
 function Logo({ compact = false }) {
   return <a className={`brand ${compact ? 'brand-compact' : ''}`} href="#inicio" aria-label="LM Pudins — início">
-    <span className="brand-monogram">LM</span>
-    <span className="brand-name">Pudins<span>ARTESANAIS</span></span>
+    <img className="brand-image" src="/images/Logo%20horizontal.png" alt="LM Pudins" />
   </a>;
 }
 
@@ -29,7 +28,7 @@ function ProductCard({ product, onOpen }) {
     <button className="product-image-button" onClick={() => onOpen(product)} aria-label={`Ver detalhes de ${product.name}`}>
       <div className={`product-art art-${product.tone}`}>
         <span className="art-number">{product.number}</span>
-        <DessertVisual tone={product.tone} powdered={product.tone === 'cream'} />
+        <img className="product-real-image" src={product.image} alt={`Pudim de ${product.name}`} loading="lazy" />
         <span className="art-caption">{product.tag}</span>
       </div>
       <span className="round-arrow"><ArrowUpRight size={18} /></span>
@@ -55,7 +54,7 @@ function ProductModal({ product, onClose }) {
   return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
     <section className="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <button className="modal-close" onClick={onClose} aria-label="Fechar detalhes"><X /></button>
-      <div className={`modal-art art-${product.tone}`}><DessertVisual tone={product.tone} large powdered={product.tone === 'cream'} /></div>
+      <div className={`modal-art art-${product.tone}`}><img className="modal-real-image" src={product.image} alt={`Pudim de ${product.name}`} /></div>
       <div className="modal-copy">
         <span className="eyebrow">SABOR {product.number} · LM PUDINS</span>
         <h2 id="modal-title">{product.name}</h2>
@@ -90,7 +89,7 @@ function App() {
     }), { threshold: 0.12 });
     document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
     return () => { window.removeEventListener('scroll', onScroll); observer.disconnect(); };
-  }, []);
+  }, [activeFilter]);
   const closeMenu = () => setMenuOpen(false);
   const handleContact = (event) => {
     event.preventDefault();
@@ -123,7 +122,7 @@ function App() {
         <div className="hero-stage">
           <div className="orbit orbit-one" /><div className="orbit orbit-two" />
           <div className="hero-stamp"><span>FEITO COM</span><Heart size={17} fill="currentColor" /><span>CARINHO</span></div>
-          <DessertVisual tone="classic" large />
+          <img className="hero-photo" src="/images/campanha/hero-pudim.jfif" alt="Pudim clássico com calda de caramelo da LM Pudins" fetchPriority="high" />
           <div className="hero-note"><span className="note-rule" /><span>CREMOSIDADE<br /><strong>INESQUECÍVEL</strong></span></div>
           <div className="hero-floating floating-top">doce<br /><em>perfeição</em></div>
           <div className="hero-floating floating-bottom">LM <span>✦</span> PUDINS</div>
@@ -132,19 +131,19 @@ function App() {
       </section>
 
       <section className="intro-section" id="essencia">
-        <div className="intro-mark">LM<span>✦</span></div>
+        <div className="intro-mark"><img src="/images/Logo%20circular.png" alt="Logo circular da LM Pudins" /></div>
         <div className="intro-copy reveal"><span className="eyebrow">O PRAZER ESTÁ NOS DETALHES</span><h2>Não é só sobremesa.<br /><em>É o momento todo.</em></h2></div>
         <p className="intro-description reveal">Do brilho delicado do caramelo à textura macia de cada fatia, cada pudim é um convite para desacelerar e saborear o que realmente importa.</p>
       </section>
 
       <section className="catalog-section" id="sabores">
         <div className="section-heading reveal"><div><span className="eyebrow eyebrow-gold">A COLEÇÃO LM</span><h2>Encontre seu <em>favorito.</em></h2></div><p>Sete personalidades, uma mesma paixão por sobremesas que ficam na memória.</p></div>
-        <div className="catalog-toolbar"><span className="catalog-count">07 SABORES PARA DESCOBRIR</span><div className="filter-list" role="group" aria-label="Filtrar sabores">{filters.map((filter) => <button key={filter} className={activeFilter === filter ? 'filter-button filter-active' : 'filter-button'} onClick={() => setActiveFilter(filter)}>{filter}</button>)}</div></div>
+        <div className="catalog-toolbar"><span className="catalog-count" aria-live="polite">{String(visibleProducts.length).padStart(2, '0')} {visibleProducts.length === 1 ? 'SABOR DISPONÍVEL' : 'SABORES PARA DESCOBRIR'}</span><div className="filter-list" role="group" aria-label="Filtrar sabores">{filters.map((filter) => <button type="button" key={filter} aria-pressed={activeFilter === filter} className={activeFilter === filter ? 'filter-button filter-active' : 'filter-button'} onClick={() => setActiveFilter(filter)}>{filter}</button>)}</div></div>
         <div className="product-grid">{visibleProducts.map((product) => <ProductCard key={product.id} product={product} onOpen={setSelectedProduct} />)}</div>
       </section>
 
       <section className="feature-section" id="experiencia">
-        <div className="feature-art"><div className="feature-frame"><DessertVisual tone="berry" large /><span className="feature-vertical">UMA EXPERIÊNCIA SENSORIAL</span></div><span className="feature-number">01 <i>/ 03</i></span></div>
+        <div className="feature-art"><div className="feature-frame"><img className="feature-real-image" src="/images/campanha/detalhe-caramelo.jfif" alt="Detalhe da calda de caramelo sobre pudim" loading="lazy" /><span className="feature-vertical">UMA EXPERIÊNCIA SENSORIAL</span></div><span className="feature-number">01 <i>/ 03</i></span></div>
         <div className="feature-copy reveal"><span className="eyebrow eyebrow-gold">A PRIMEIRA IMPRESSÃO</span><h2>O brilho do caramelo.<br /><em>A arte do sabor.</em></h2><p>Uma calda brilhante que escorre suavemente, uma textura delicada e cores que convidam o olhar antes mesmo da primeira colherada.</p><div className="feature-points"><div><span><Check size={15} /></span><p><strong>Texturas que encantam</strong><small>Um visual tão especial quanto a experiência.</small></p></div><div><span><Check size={15} /></span><p><strong>Sabores com personalidade</strong><small>Do clássico às combinações mais vibrantes.</small></p></div></div><a className="text-link text-link-light" href="#sabores">Explore a coleção <ArrowRight size={15} /></a></div>
       </section>
 
