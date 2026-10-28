@@ -36,6 +36,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - lm_pudins_uploads:/data/uploads
     networks: [app-internal]
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
@@ -63,6 +65,7 @@ services:
 
 volumes:
   lm_pudins_db_data:
+  lm_pudins_uploads:
 networks:
   traefik:
     external: true
