@@ -15,26 +15,49 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy through SSH
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: deployer
           key: ${{ secrets.VPS_SSH_KEY }}
+          timeout: 30s
+          command_timeout: 10m
           script_stop: true
           script: |
             set -eu
-            mkdir -p "$HOME/lmpudins-page"
-            if [ -d "$HOME/lmpudins-page/.git" ]; then
-              cd "$HOME/lmpudins-page"
+
+            SITE_DIR="$HOME/lmpudins.com.br/www"
+
+            echo "==> SSH conectado. Diretorio do site: $SITE_DIR"
+            mkdir -p "$HOME/lmpudins.com.br"
+
+            if [ -d "$SITE_DIR/.git" ]; then
+              echo "==> Repositorio existente; atualizando branch deploy-vps-traefik"
+              cd "$SITE_DIR"
               git fetch origin
               git checkout deploy-vps-traefik
               git pull --ff-only origin deploy-vps-traefik
             else
-              rmdir "$HOME/lmpudins-page" 2>/dev/null || true
-              git clone --branch deploy-vps-traefik https://github.com/andre7184/lmpudins-page.git "$HOME/lmpudins-page"
-              cd "$HOME/lmpudins-page"
+              if [ -e "$SITE_DIR" ] && [ -n "$(find "$SITE_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
+                echo "ERRO: $SITE_DIR ja existe e nao esta vazio, mas nao contem .git. Nenhum arquivo foi apagado."
+                exit 1
+              fi
+
+              echo "==> Clonando repositorio para $SITE_DIR"
+              git clone --branch deploy-vps-traefik https://github.com/andre7184/lmpudins-page.git "$SITE_DIR"
+              cd "$SITE_DIR"
             fi
 
-            # Optional: configure VITE_WHATSAPP_NUMBER in ~/lmpudins-page/.env on the VPS.
+            echo "==> Validando configuracao do Docker Compose"
+            docker compose config --quiet
+
+            echo "==> Construindo e iniciando o site"
             docker compose up -d --build --remove-orphans
+
+            echo "==> Estado dos containers"
+            docker compose ps
+
+            echo "==> Limpando imagens antigas sem uso"
             docker image prune -f
+
+            echo "==> Deploy concluido"
