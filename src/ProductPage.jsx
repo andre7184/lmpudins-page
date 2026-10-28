@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 
-const moneySafe = (value) => String(value ?? '');
-
 export default function ProductPage() {
   const slug = decodeURIComponent(window.location.pathname.replace(/^\\/produto\\/?/, '').split('/')[0] || '');
   const [product, setProduct] = useState(null);
