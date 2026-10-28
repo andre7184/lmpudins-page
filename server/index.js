@@ -35,13 +35,482 @@ app.use(session({
 }));
 
 const initialProducts = [
-  { slug:'frutas-vermelhas', name:'Pudim de Frutas Vermelhas', short_description:'O encontro da cremosidade com o frescor das frutas.', description:'Textura cremosa, geleia caseira de frutas vermelhas e o toque delicado do leite em pó.', ingredients:'Caramelo, leite integral, creme de leite, ovos, açúcar, leite em pó, extrato de baunilha e geleia caseira de frutas vermelhas.', image:'/images/pudins/frutas-vermelhas.jfif', category:'Frutados', sort_order:1 },
-  { slug:'laranja', name:'Pudim de Laranja', short_description:'Notas cítricas envolvidas por caramelo dourado.', description:'Um pudim aromático, equilibrando o doce do caramelo com o toque cítrico da laranja.', ingredients:'Caramelo, leite integral, creme de leite, ovos, açúcar, extrato de baunilha, raspas de laranja e geleia caseira de laranja.', image:'/images/pudins/laranja.jfif', category:'Frutados', sort_order:2 },
-  { slug:'chocolate-cafe', name:'Pudim de Chocolate com Café', short_description:'Intensidade elegante para quem ama sabores marcantes.', description:'O café encontra a profundidade do chocolate em uma combinação intensa.', ingredients:'Caramelo, leite integral, creme de leite, ovos, açúcar, extrato de baunilha, chocolate em pó 70%, café solúvel e raspas de chocolate.', image:'/images/pudins/chocolate-cafe.jfif', category:'Intensos', sort_order:3 },
-  { slug:'caldo-de-cana', name:'Pudim de Caldo de Cana', short_description:'Uma inspiração brasileira com notas de melaço e limão.', description:'Uma versão de inspiração brasileira, adoçada com redução de melaço caseiro.', ingredients:'Caramelo de melaço de cana, leite integral, creme de leite, ovos, melaço de cana, extrato de baunilha e raspas de limão.', image:'/images/pudins/caldo-de-cana.jfif', category:'Intensos', sort_order:4 },
-  { slug:'maracuja', name:'Pudim de Maracujá', short_description:'O equilíbrio vibrante entre doçura e acidez tropical.', description:'Acidez suavizada pelo leite em pó, com contraste de textura das sementes de maracujá.', ingredients:'Caramelo, leite integral, creme de leite, ovos, açúcar, leite em pó integral, extrato de baunilha, sal, geleia caseira e sementes frescas de maracujá.', image:'/images/pudins/maracuja.jfif', category:'Frutados', sort_order:5 },
-  { slug:'quatro-leites', name:'Pudim de 4 Leites', short_description:'Uma textura aveludada e uma cremosidade especial.', description:'Extremamente cremoso, doce na medida e finalizado com uma delicada cobertura em pó.', ingredients:'Caramelo, leite condensado, creme de leite, leite integral, leite em pó integral, ovos, extrato de baunilha e sal.', image:'/images/pudins/quatro-leites.jfif', category:'Cremosos', sort_order:6 },
-  { slug:'romeu-julieta', name:'Pudim Romeu e Julieta', short_description:'A delicadeza do queijo com o sabor envolvente da goiabada.', description:'Pudim com cream cheese, contrastando com a doçura da goiabada.', ingredients:'Caramelo, leite integral, creme de leite, ovos, açúcar, cream cheese, extrato de baunilha, sal, geleia caseira de goiabada e queijo opcional para decoração.', image:'/images/pudins/romeu-julieta.jfif', category:'Frutados', sort_order:7 }
+  {
+    "slug": "frutas-vermelhas",
+    "name": "Pudim de Frutas Vermelhas",
+    "short_description": "O encontro da cremosidade com o frescor das frutas.",
+    "description": "Pudim cremoso com o sabor marcante das frutas vermelhas.",
+    "ingredients": "Leite integral, creme de leite, ovos, açúcar refinado, leite em pó integral, pó de frutas vermelhas liofilizado, baunilha em pasta, polpa de frutas vermelhas, amido de milho e manteiga.",
+    "image": "/images/pudins/frutas-vermelhas.jfif",
+    "category": "Frutados",
+    "sort_order": 1,
+    "nutrition": {
+      "porcao": "140 g (1 unidade / pote)",
+      "nutrientes": [
+        [
+          "Valor energético",
+          "220 kcal = 924 kJ",
+          "11%"
+        ],
+        [
+          "Carboidratos",
+          "37 g",
+          "12%"
+        ],
+        [
+          "Açúcares totais",
+          "31 g",
+          "—"
+        ],
+        [
+          "Açúcares adicionados",
+          "24 g",
+          "48%"
+        ],
+        [
+          "Proteínas",
+          "4,6 g",
+          "6%"
+        ],
+        [
+          "Gorduras totais",
+          "6,5 g",
+          "10%"
+        ],
+        [
+          "Gorduras saturadas",
+          "3,5 g",
+          "16%"
+        ],
+        [
+          "Gorduras trans",
+          "0 g",
+          "**"
+        ],
+        [
+          "Fibra alimentar",
+          "0,8 g",
+          "3%"
+        ],
+        [
+          "Sódio",
+          "65 mg",
+          "3%"
+        ]
+      ],
+      "alergenicos": "CONTÉM LACTOSE. CONTÉM DERIVADOS DE LEITE E OVO. PODE CONTER TRAÇOS DE GLÚTEN.",
+      "conservantes": "NÃO CONTÉM CONSERVANTES.",
+      "nota_vd": "* Percentual de valores diários fornecidos pela porção. ** VD não estabelecido."
+    }
+  },
+  {
+    "slug": "laranja",
+    "name": "Pudim de Laranja",
+    "short_description": "Notas cítricas envolvidas por caramelo dourado.",
+    "description": "Pudim aromático com raspas e suco de laranja.",
+    "ingredients": "Leite integral, creme de leite, ovos, açúcar refinado, leite em pó integral, baunilha em pasta, raspas de laranja Bahia, suco de laranja e amido de milho.",
+    "image": "/images/pudins/laranja.jfif",
+    "category": "Frutados",
+    "sort_order": 2,
+    "nutrition": {
+      "porcao": "140 g (1 unidade / pote)",
+      "nutrientes": [
+        [
+          "Valor energético",
+          "205 kcal = 861 kJ",
+          "10%"
+        ],
+        [
+          "Carboidratos",
+          "36 g",
+          "12%"
+        ],
+        [
+          "Açúcares totais",
+          "30 g",
+          "—"
+        ],
+        [
+          "Açúcares adicionados",
+          "24 g",
+          "48%"
+        ],
+        [
+          "Proteínas",
+          "4,5 g",
+          "6%"
+        ],
+        [
+          "Gorduras totais",
+          "5,5 g",
+          "8%"
+        ],
+        [
+          "Gorduras saturadas",
+          "3,0 g",
+          "14%"
+        ],
+        [
+          "Gorduras trans",
+          "0 g",
+          "**"
+        ],
+        [
+          "Fibra alimentar",
+          "0,5 g",
+          "2%"
+        ],
+        [
+          "Sódio",
+          "60 mg",
+          "3%"
+        ]
+      ],
+      "alergenicos": "CONTÉM LACTOSE. CONTÉM DERIVADOS DE LEITE E OVO. PODE CONTER TRAÇOS DE GLÚTEN.",
+      "conservantes": "NÃO CONTÉM CONSERVANTES.",
+      "nota_vd": "* Percentual de valores diários fornecidos pela porção. ** VD não estabelecido."
+    }
+  },
+  {
+    "slug": "chocolate-cafe",
+    "name": "Pudim de Chocolate com Café",
+    "short_description": "Intensidade elegante para quem ama sabores marcantes.",
+    "description": "Chocolate e café em uma combinação intensa e sofisticada.",
+    "ingredients": "Leite integral, creme de leite, ovos, açúcar refinado, cacau em pó 50%, café solúvel e baunilha em pasta.",
+    "image": "/images/pudins/chocolate-cafe.jfif",
+    "category": "Intensos",
+    "sort_order": 3,
+    "nutrition": {
+      "porcao": "140 g (1 unidade / pote)",
+      "nutrientes": [
+        [
+          "Valor energético",
+          "200 kcal = 840 kJ",
+          "10%"
+        ],
+        [
+          "Carboidratos",
+          "32 g",
+          "11%"
+        ],
+        [
+          "Açúcares totais",
+          "26 g",
+          "—"
+        ],
+        [
+          "Açúcares adicionados",
+          "22 g",
+          "44%"
+        ],
+        [
+          "Proteínas",
+          "5,0 g",
+          "7%"
+        ],
+        [
+          "Gorduras totais",
+          "6,0 g",
+          "9%"
+        ],
+        [
+          "Gorduras saturadas",
+          "3,5 g",
+          "16%"
+        ],
+        [
+          "Gorduras trans",
+          "0 g",
+          "**"
+        ],
+        [
+          "Fibra alimentar",
+          "1,5 g",
+          "6%"
+        ],
+        [
+          "Sódio",
+          "60 mg",
+          "3%"
+        ]
+      ],
+      "alergenicos": "CONTÉM LACTOSE. CONTÉM DERIVADOS DE LEITE E OVO. PODE CONTER TRAÇOS DE GLÚTEN.",
+      "conservantes": "NÃO CONTÉM CONSERVANTES.",
+      "nota_vd": "* Percentual de valores diários fornecidos pela porção. ** VD não estabelecido."
+    }
+  },
+  {
+    "slug": "caldo-de-cana",
+    "name": "Pudim Caldo de Cana",
+    "short_description": "Uma inspiração brasileira com notas de melaço e limão.",
+    "description": "Pudim com melaço de cana reduzido e toque de limão.",
+    "ingredients": "Leite integral, creme de leite, ovos, melaço de cana reduzido, suco de limão e baunilha em pasta.",
+    "image": "/images/pudins/caldo-de-cana.jfif",
+    "category": "Intensos",
+    "sort_order": 4,
+    "nutrition": {
+      "porcao": "140 g (1 unidade / pote)",
+      "nutrientes": [
+        [
+          "Valor energético",
+          "205 kcal = 861 kJ",
+          "10%"
+        ],
+        [
+          "Carboidratos",
+          "36 g",
+          "12%"
+        ],
+        [
+          "Açúcares totais",
+          "32 g",
+          "—"
+        ],
+        [
+          "Açúcares adicionados",
+          "25 g",
+          "50%"
+        ],
+        [
+          "Proteínas",
+          "4,0 g",
+          "5%"
+        ],
+        [
+          "Gorduras totais",
+          "5,0 g",
+          "8%"
+        ],
+        [
+          "Gorduras saturadas",
+          "2,8 g",
+          "13%"
+        ],
+        [
+          "Gorduras trans",
+          "0 g",
+          "**"
+        ],
+        [
+          "Fibra alimentar",
+          "0 g",
+          "0%"
+        ],
+        [
+          "Sódio",
+          "55 mg",
+          "2%"
+        ]
+      ],
+      "alergenicos": "CONTÉM LACTOSE. CONTÉM DERIVADOS DE LEITE E OVO. PODE CONTER TRAÇOS DE GLÚTEN.",
+      "conservantes": "NÃO CONTÉM CONSERVANTES.",
+      "nota_vd": "* Açúcares adicionados provenientes do melaço de cana reduzido. ** VD não estabelecido."
+    }
+  },
+  {
+    "slug": "maracuja",
+    "name": "Pudim de Maracujá",
+    "short_description": "O equilíbrio vibrante entre doçura e acidez tropical.",
+    "description": "Pudim com polpa de maracujá e equilíbrio entre doçura e acidez.",
+    "ingredients": "Leite integral, creme de leite, ovos, açúcar refinado, leite em pó integral, baunilha em pasta, polpa de maracujá, amido de milho e manteiga.",
+    "image": "/images/pudins/maracuja.jfif",
+    "category": "Frutados",
+    "sort_order": 5,
+    "nutrition": {
+      "porcao": "140 g (1 unidade / pote)",
+      "nutrientes": [
+        [
+          "Valor energético",
+          "215 kcal = 903 kJ",
+          "11%"
+        ],
+        [
+          "Carboidratos",
+          "35 g",
+          "12%"
+        ],
+        [
+          "Açúcares totais",
+          "29 g",
+          "—"
+        ],
+        [
+          "Açúcares adicionados",
+          "23 g",
+          "46%"
+        ],
+        [
+          "Proteínas",
+          "4,5 g",
+          "6%"
+        ],
+        [
+          "Gorduras totais",
+          "6,0 g",
+          "9%"
+        ],
+        [
+          "Gorduras saturadas",
+          "3,2 g",
+          "15%"
+        ],
+        [
+          "Gorduras trans",
+          "0 g",
+          "**"
+        ],
+        [
+          "Fibra alimentar",
+          "0,6 g",
+          "2%"
+        ],
+        [
+          "Sódio",
+          "60 mg",
+          "3%"
+        ]
+      ],
+      "alergenicos": "CONTÉM LACTOSE. CONTÉM DERIVADOS DE LEITE E OVO. PODE CONTER TRAÇOS DE GLÚTEN.",
+      "conservantes": "NÃO CONTÉM CONSERVANTES.",
+      "nota_vd": "* Percentual de valores diários fornecidos pela porção. ** VD não estabelecido."
+    }
+  },
+  {
+    "slug": "quatro-leites",
+    "name": "Pudim de 4 Leites",
+    "short_description": "Uma textura aveludada e uma cremosidade especial.",
+    "description": "Uma receita muito cremosa que combina quatro formas de leite.",
+    "ingredients": "Leite condensado, creme de leite, leite integral, leite em pó integral, ovos e baunilha em pasta.",
+    "image": "/images/pudins/quatro-leites.jfif",
+    "category": "Cremosos",
+    "sort_order": 6,
+    "nutrition": {
+      "porcao": "140 g (1 unidade / pote)",
+      "nutrientes": [
+        [
+          "Valor energético",
+          "245 kcal = 1029 kJ",
+          "12%"
+        ],
+        [
+          "Carboidratos",
+          "37 g",
+          "12%"
+        ],
+        [
+          "Açúcares totais",
+          "32 g",
+          "—"
+        ],
+        [
+          "Açúcares adicionados",
+          "26 g",
+          "52%"
+        ],
+        [
+          "Proteínas",
+          "7,0 g",
+          "10%"
+        ],
+        [
+          "Gorduras totais",
+          "8,0 g",
+          "12%"
+        ],
+        [
+          "Gorduras saturadas",
+          "4,5 g",
+          "20%"
+        ],
+        [
+          "Gorduras trans",
+          "0 g",
+          "**"
+        ],
+        [
+          "Fibra alimentar",
+          "0 g",
+          "0%"
+        ],
+        [
+          "Sódio",
+          "95 mg",
+          "4%"
+        ]
+      ],
+      "alergenicos": "CONTÉM LACTOSE. CONTÉM DERIVADOS DE LEITE E OVO. PODE CONTER TRAÇOS DE GLÚTEN.",
+      "conservantes": "NÃO CONTÉM CONSERVANTES.",
+      "nota_vd": "* Percentual de valores diários fornecidos pela porção. ** VD não estabelecido."
+    }
+  },
+  {
+    "slug": "romeu-julieta",
+    "name": "Pudim Romeu e Julieta",
+    "short_description": "A delicadeza do queijo com o sabor envolvente da goiabada.",
+    "description": "A combinação clássica de cream cheese e goiaba em uma versão cremosa.",
+    "ingredients": "Leite integral, creme de leite, ovos, açúcar refinado, cream cheese, baunilha em pasta, polpa de goiaba e amido de milho.",
+    "image": "/images/pudins/romeu-julieta.jfif",
+    "category": "Frutados",
+    "sort_order": 7,
+    "nutrition": {
+      "porcao": "140 g (1 unidade / pote)",
+      "nutrientes": [
+        [
+          "Valor energético",
+          "240 kcal = 1008 kJ",
+          "12%"
+        ],
+        [
+          "Carboidratos",
+          "28 g",
+          "9%"
+        ],
+        [
+          "Açúcares totais",
+          "23 g",
+          "—"
+        ],
+        [
+          "Açúcares adicionados",
+          "18 g",
+          "36%"
+        ],
+        [
+          "Proteínas",
+          "6,0 g",
+          "8%"
+        ],
+        [
+          "Gorduras totais",
+          "12 g",
+          "18%"
+        ],
+        [
+          "Gorduras saturadas",
+          "7,0 g",
+          "32%"
+        ],
+        [
+          "Gorduras trans",
+          "0 g",
+          "**"
+        ],
+        [
+          "Fibra alimentar",
+          "0,3 g",
+          "1%"
+        ],
+        [
+          "Sódio",
+          "110 mg",
+          "5%"
+        ]
+      ],
+      "alergenicos": "CONTÉM LACTOSE. CONTÉM DERIVADOS DE LEITE E OVO. PODE CONTER TRAÇOS DE GLÚTEN.",
+      "conservantes": "NÃO CONTÉM CONSERVANTES.",
+      "nota_vd": "* Percentual de valores diários fornecidos pela porção. ** VD não estabelecido."
+    }
+  }
 ];
 
 async function initDb() {
@@ -57,10 +526,23 @@ async function initDb() {
     id BIGSERIAL PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
-  for (const p of initialProducts) {
-    await pool.query(`INSERT INTO products (slug,name,short_description,description,ingredients,image,category,sort_order)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (slug) DO NOTHING`,
-      [p.slug,p.name,p.short_description,p.description,p.ingredients,p.image,p.category,p.sort_order]);
+  await pool.query(`CREATE TABLE IF NOT EXISTS catalog_seed_versions (
+    version TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`);
+  const seedVersion = 'catalogo-nutricional-2026-10-v1';
+  const seedCheck = await pool.query('SELECT 1 FROM catalog_seed_versions WHERE version=$1', [seedVersion]);
+  if (seedCheck.rowCount === 0) {
+    for (const p of initialProducts) {
+      await pool.query(`INSERT INTO products (slug,name,short_description,description,ingredients,image,category,sort_order,nutrition)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)
+        ON CONFLICT (slug) DO UPDATE SET
+          name=EXCLUDED.name, short_description=EXCLUDED.short_description,
+          description=EXCLUDED.description, ingredients=EXCLUDED.ingredients,
+          image=EXCLUDED.image, category=EXCLUDED.category, sort_order=EXCLUDED.sort_order,
+          nutrition=EXCLUDED.nutrition, updated_at=NOW()`,
+        [p.slug,p.name,p.short_description,p.description,p.ingredients,p.image,p.category,p.sort_order,JSON.stringify(p.nutrition)]);
+    }
+    await pool.query('INSERT INTO catalog_seed_versions (version) VALUES ($1) ON CONFLICT DO NOTHING', [seedVersion]);
   }
   if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
     const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);

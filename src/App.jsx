@@ -62,6 +62,7 @@ function ProductModal({ product, onClose }) {
         <p>{product.description}</p>
         <div className="ingredient-block"><span>INGREDIENTES DO CATÁLOGO</span><p>{product.ingredients}</p></div>
         {nutritionEntries.length > 0 && <div className="ingredient-block"><span>INFORMAÇÃO NUTRICIONAL</span><table style={{width:"100%",borderCollapse:"collapse",marginTop:10,fontSize:13}}><tbody>{nutritionEntries.map(([key,value]) => <tr key={key} style={{borderBottom:"1px solid #8a6b5044"}}><th scope="row" style={{textAlign:"left",padding:"7px 8px 7px 0",fontWeight:500}}>{key.replaceAll("_"," ")}</th><td style={{textAlign:"right",padding:"7px 0 7px 8px"}}>{typeof value === "object" ? JSON.stringify(value) : String(value)}</td></tr>)}</tbody></table></div>}
+        <a className="text-link" href={`/produto/${product.slug || product.id}`} style={{display:"inline-flex",marginBottom:16}}>Ver ficha completa do produto <ArrowUpRight size={15} /></a>
         <a className="button button-gold" href="#pedidos" onClick={onClose}>Tenho interesse <ArrowRight size={16} /></a>
         <small>Consulte disponibilidade e informações do produto diretamente com a marca.</small>
       </div>
