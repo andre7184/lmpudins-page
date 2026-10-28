@@ -1,0 +1,24 @@
+const $ = id => document.getElementById(id);
+let products = [], selectedId = null;
+async function api(path, options={}) {
+  const response = await fetch(path,{credentials:'same-origin',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
+  if(response.status===204) return null;
+  const data = await response.json().catch(()=>({error:'Resposta inválida do servidor.'}));
+  if(!response.ok) throw new Error(data.error || 'Não foi possível concluir a operação.');
+  return data;
+}
+function status(id,message){$(id).textContent=message||''}
+function showDashboard(show){$('login').classList.toggle('hidden',show);$('dashboard').classList.toggle('hidden',!show)}
+function clearForm(){selectedId=null;$('product-form').reset();$('product-id').value='';$('sort-order').value='0';$('active').checked=true;$('nutrition').value='{}';$('delete-product').classList.add('hidden');status('form-status','');renderList()}
+function fillForm(p){selectedId=p.id;$('product-id').value=p.id;$('slug').value=p.slug;$('name').value=p.name;$('category').value=p.category||'Cremosos';$('sort-order').value=p.sort_order||0;$('short-description').value=p.short_description||'';$('description').value=p.description||'';$('ingredients').value=p.ingredients||'';$('image').value=p.image||'';$('nutrition').value=JSON.stringify(p.nutrition||{},null,2);$('active').checked=!!p.active;$('delete-product').classList.remove('hidden');status('form-status','');renderList()}
+function renderList(){const list=$('product-list');list.replaceChildren();products.forEach(p=>{const b=document.createElement('button');b.type='button';b.className='product-row'+(String(selectedId)===String(p.id)?' active':'');b.innerHTML='<span></span><span aria-hidden="true">›</span>';const span=b.querySelector('span');span.textContent=p.name;const small=document.createElement('small');small.textContent=p.active?'Publicado':'Rascunho';span.appendChild(small);b.addEventListener('click',()=>fillForm(p));list.appendChild(b)})}
+async function loadProducts(){products=await api('/api/admin/products');renderList()}
+async function checkSession(){try{await api('/api/auth/me');showDashboard(true);await loadProducts();}catch{showDashboard(false)}}
+$('login-form').addEventListener('submit',async e=>{e.preventDefault();status('login-status','Entrando…');try{await api('/api/auth/login',{method:'POST',body:JSON.stringify({username:$('username').value,password:$('password').value})});$('password').value='';showDashboard(true);await loadProducts();status('login-status','')}catch(err){status('login-status',err.message)}});
+$('logout').addEventListener('click',async()=>{try{await api('/api/auth/logout',{method:'POST'})}finally{showDashboard(false)}});
+$('new-product').addEventListener('click',clearForm);
+$('product-form').addEventListener('submit',async e=>{e.preventDefault();status('form-status','Salvando…');let nutrition;try{nutrition=JSON.parse($('nutrition').value||'{}');if(!nutrition||Array.isArray(nutrition)||typeof nutrition!=='object')throw new Error()}catch{status('form-status','A informação nutricional precisa ser um objeto JSON válido.');return}
+const p={slug:$('slug').value.trim(),name:$('name').value.trim(),category:$('category').value,sort_order:Number($('sort-order').value)||0,short_description:$('short-description').value,description:$('description').value,ingredients:$('ingredients').value,image:$('image').value.trim(),nutrition,active:$('active').checked};
+try{const saved=selectedId?await api('/api/admin/products/'+selectedId,{method:'PUT',body:JSON.stringify(p)}):await api('/api/admin/products',{method:'POST',body:JSON.stringify(p)});await loadProducts();fillForm(saved);status('form-status','Produto salvo com sucesso.')}catch(err){status('form-status',err.message)}});
+$('delete-product').addEventListener('click',async()=>{if(!selectedId||!confirm('Excluir este produto do catálogo?'))return;try{await api('/api/admin/products/'+selectedId,{method:'DELETE'});await loadProducts();clearForm();status('form-status','Produto excluído.')}catch(err){status('form-status',err.message)}});
+checkSession();
