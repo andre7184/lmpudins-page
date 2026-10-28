@@ -6,6 +6,17 @@ services:
       args:
         VITE_WHATSAPP_NUMBER: ${VITE_WHATSAPP_NUMBER:-}
     container_name: lm-pudins-page
-    ports:
-      - "${PORTA_SITE:-8080}:80"
     restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lmpudins.rule=Host(`www.lmpudins.com.br`)"
+      - "traefik.http.routers.lmpudins.entrypoints=websecure"
+      - "traefik.http.routers.lmpudins.tls=true"
+      - "traefik.http.routers.lmpudins.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lmpudins.loadbalancer.server.port=80"
+
+networks:
+  traefik:
+    external: true
