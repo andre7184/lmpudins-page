@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowDown, ArrowRight, ArrowUpRight, Check, Menu, X, Sparkles, Heart, Instagram, MessageCircle, ChevronDown } from 'lucide-react';
-import { products } from './products.js';
+import { products as fallbackProducts } from './products.js';
 
 function Logo({ compact = false }) {
   return <a className={`brand ${compact ? 'brand-compact' : ''}`} href="#inicio" aria-label="LM Pudins — início">
@@ -69,17 +69,29 @@ function ProductModal({ product, onClose }) {
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [catalogProducts, setCatalogProducts] = useState(fallbackProducts);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [scrolled, setScrolled] = useState(false);
   const [contact, setContact] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const filters = ['Todos', 'Frutados', 'Intensos', 'Cremosos'];
-  const visibleProducts = products.filter((p) => {
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/products').then((response) => { if (!response.ok) throw new Error('API indisponível'); return response.json(); }).then((items) => {
+      if (cancelled || !Array.isArray(items) || !items.length) return;
+      const tones = { 'frutas-vermelhas':'berry', laranja:'orange', 'chocolate-cafe':'coffee', 'caldo-de-cana':'cane', maracuja:'passion', 'quatro-leites':'cream', 'romeu-julieta':'guava' };
+      const accents = { berry:'#c52e50', orange:'#f28a28', coffee:'#6f3025', cane:'#bd8a36', passion:'#e9b52c', cream:'#e8d4a2', guava:'#b72b42' };
+      const mapped = items.map((p, i) => { const tone = tones[p.slug] || (p.category === 'Frutados' ? 'berry' : p.category === 'Intensos' ? 'coffee' : 'cream'); return { ...p, id:p.slug, number:String(i+1).padStart(2,'0'), short:p.short_description || '', tone, accent:accents[tone] || '#bd8a36', tag:p.category || 'Coleção LM' }; });
+      setCatalogProducts(mapped);
+    }).catch(() => {}).finally(() => {});
+    return () => { cancelled = true; };
+  }, []);
+  const visibleProducts = catalogProducts.filter((p) => {
     if (activeFilter === 'Todos') return true;
-    if (activeFilter === 'Frutados') return ['berry','orange','passion','guava'].includes(p.tone);
-    if (activeFilter === 'Intensos') return ['coffee','cane'].includes(p.tone);
-    return ['cream'].includes(p.tone);
+    if (activeFilter === 'Frutados') return p.category === 'Frutados' || ['berry','orange','passion','guava'].includes(p.tone);
+    if (activeFilter === 'Intensos') return p.category === 'Intensos' || ['coffee','cane'].includes(p.tone);
+    return p.category === 'Cremosos' || ['cream'].includes(p.tone);
   });
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 28);
