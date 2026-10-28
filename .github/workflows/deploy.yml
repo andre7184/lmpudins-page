@@ -1,9 +1,7 @@
 name: Deploy LM Pudins to VPS
 
 on:
-  push:
-    branches:
-      - main
+  # Temporariamente manual enquanto a branch main e a versao_0-1 sao sincronizadas.
   workflow_dispatch:
 
 permissions:
@@ -25,39 +23,13 @@ jobs:
           script_stop: true
           script: |
             set -eu
-
             SITE_DIR="$HOME/lmpudins.com.br/www"
-
-            echo "==> SSH conectado. Diretorio do site: $SITE_DIR"
-            mkdir -p "$HOME/lmpudins.com.br"
-
-            if [ -d "$SITE_DIR/.git" ]; then
-              echo "==> Repositorio existente; atualizando branch main"
-              cd "$SITE_DIR"
-              git fetch origin
-              git checkout main
-              git pull --ff-only origin main
-            else
-              if [ -e "$SITE_DIR" ] && [ -n "$(find "$SITE_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
-                echo "ERRO: $SITE_DIR ja existe e nao esta vazio, mas nao contem .git. Nenhum arquivo foi apagado."
-                exit 1
-              fi
-
-              echo "==> Clonando repositorio na branch main para $SITE_DIR"
-              git clone --branch main https://github.com/andre7184/lmpudins-page.git "$SITE_DIR"
-              cd "$SITE_DIR"
-            fi
-
-            echo "==> Validando configuracao do Docker Compose"
+            echo "==> Atualizando branch main em $SITE_DIR"
+            cd "$SITE_DIR"
+            git fetch origin
+            git checkout main
+            git pull --ff-only origin main
             docker compose config --quiet
-
-            echo "==> Construindo e iniciando o site"
             docker compose up -d --build --remove-orphans
-
-            echo "==> Estado dos containers"
             docker compose ps
-
-            echo "==> Limpando imagens antigas sem uso"
             docker image prune -f
-
-            echo "==> Deploy concluido"
