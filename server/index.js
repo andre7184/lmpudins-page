@@ -38,7 +38,7 @@ const initialProducts = [
   {
     "slug": "frutas-vermelhas",
     "name": "Pudim de Frutas Vermelhas",
-    "short": "O encontro da cremosidade com o frescor das frutas.",
+    "short_description": "O encontro da cremosidade com o frescor das frutas.",
     "description": "Pudim cremoso com o sabor marcante das frutas vermelhas.",
     "ingredients": "Leite integral, creme de leite, ovos, açúcar refinado, leite em pó integral, pó de frutas vermelhas liofilizado, baunilha em pasta, polpa de frutas vermelhas, amido de milho e manteiga.",
     "image": "/images/pudins/frutas-vermelhas.jfif",
@@ -106,7 +106,7 @@ const initialProducts = [
   {
     "slug": "laranja",
     "name": "Pudim de Laranja",
-    "short": "Notas cítricas envolvidas por caramelo dourado.",
+    "short_description": "Notas cítricas envolvidas por caramelo dourado.",
     "description": "Pudim aromático com raspas e suco de laranja.",
     "ingredients": "Leite integral, creme de leite, ovos, açúcar refinado, leite em pó integral, baunilha em pasta, raspas de laranja Bahia, suco de laranja e amido de milho.",
     "image": "/images/pudins/laranja.jfif",
@@ -174,7 +174,7 @@ const initialProducts = [
   {
     "slug": "chocolate-cafe",
     "name": "Pudim de Chocolate com Café",
-    "short": "Intensidade elegante para quem ama sabores marcantes.",
+    "short_description": "Intensidade elegante para quem ama sabores marcantes.",
     "description": "Chocolate e café em uma combinação intensa e sofisticada.",
     "ingredients": "Leite integral, creme de leite, ovos, açúcar refinado, cacau em pó 50%, café solúvel e baunilha em pasta.",
     "image": "/images/pudins/chocolate-cafe.jfif",
@@ -242,7 +242,7 @@ const initialProducts = [
   {
     "slug": "caldo-de-cana",
     "name": "Pudim Caldo de Cana",
-    "short": "Uma inspiração brasileira com notas de melaço e limão.",
+    "short_description": "Uma inspiração brasileira com notas de melaço e limão.",
     "description": "Pudim com melaço de cana reduzido e toque de limão.",
     "ingredients": "Leite integral, creme de leite, ovos, melaço de cana reduzido, suco de limão e baunilha em pasta.",
     "image": "/images/pudins/caldo-de-cana.jfif",
@@ -310,7 +310,7 @@ const initialProducts = [
   {
     "slug": "maracuja",
     "name": "Pudim de Maracujá",
-    "short": "O equilíbrio vibrante entre doçura e acidez tropical.",
+    "short_description": "O equilíbrio vibrante entre doçura e acidez tropical.",
     "description": "Pudim com polpa de maracujá e equilíbrio entre doçura e acidez.",
     "ingredients": "Leite integral, creme de leite, ovos, açúcar refinado, leite em pó integral, baunilha em pasta, polpa de maracujá, amido de milho e manteiga.",
     "image": "/images/pudins/maracuja.jfif",
@@ -378,7 +378,7 @@ const initialProducts = [
   {
     "slug": "quatro-leites",
     "name": "Pudim de 4 Leites",
-    "short": "Uma textura aveludada e uma cremosidade especial.",
+    "short_description": "Uma textura aveludada e uma cremosidade especial.",
     "description": "Uma receita muito cremosa que combina quatro formas de leite.",
     "ingredients": "Leite condensado, creme de leite, leite integral, leite em pó integral, ovos e baunilha em pasta.",
     "image": "/images/pudins/quatro-leites.jfif",
@@ -446,7 +446,7 @@ const initialProducts = [
   {
     "slug": "romeu-julieta",
     "name": "Pudim Romeu e Julieta",
-    "short": "A delicadeza do queijo com o sabor envolvente da goiabada.",
+    "short_description": "A delicadeza do queijo com o sabor envolvente da goiabada.",
     "description": "A combinação clássica de cream cheese e goiaba em uma versão cremosa.",
     "ingredients": "Leite integral, creme de leite, ovos, açúcar refinado, cream cheese, baunilha em pasta, polpa de goiaba e amido de milho.",
     "image": "/images/pudins/romeu-julieta.jfif",
