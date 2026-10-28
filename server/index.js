@@ -14,12 +14,17 @@ const port = Number(process.env.API_PORT || 3000);
 const secureCookies = process.env.COOKIE_SECURE !== 'false';
 
 app.disable('x-powered-by');
+app.set('trust proxy', 1);
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+  console.error('SESSION_SECRET precisa ter pelo menos 32 caracteres.');
+  process.exit(1);
+}
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: '1mb' }));
 app.use(session({
   store: new PgSession({ pool, tableName: 'admin_sessions', createTableIfMissing: true }),
   name: 'lm_admin_session',
-  secret: process.env.SESSION_SECRET || 'development-only-change-me',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { httpOnly: true, sameSite: 'strict', secure: secureCookies, maxAge: 8 * 60 * 60 * 1000 }
@@ -98,7 +103,7 @@ app.post('/api/admin/products', isAdmin, async (req,res) => {
 });
 app.put('/api/admin/products/:id', isAdmin, async (req,res) => {
   const p = req.body || {};
-  if (!String(p.name||'').trim()) return res.status(400).json({error:'O nome do produto é obrigatório.'});
+  if (!String(p.slug||'').match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) || !String(p.name||'').trim()) return res.status(400).json({error:'Informe nome e identificador (slug) válido.'});
   try {
     const result = await pool.query(`UPDATE products SET slug=$1,name=$2,short_description=$3,description=$4,ingredients=$5,image=$6,category=$7,nutrition=$8,active=$9,sort_order=$10,updated_at=NOW()
       WHERE id=$11 RETURNING *`, [p.slug,p.name,p.short_description||'',p.description||'',p.ingredients||'',p.image||'',p.category||'Cremosos',JSON.stringify(p.nutrition||{}),p.active!==false,Number(p.sort_order)||0,req.params.id]);
