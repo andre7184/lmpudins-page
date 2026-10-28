@@ -5,6 +5,9 @@ import connectPgSimple from 'connect-pg-simple';
 import bcrypt from 'bcryptjs';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import multer from 'multer';
+import { mkdirSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 
 const { Pool } = pg;
 const app = express();
@@ -13,6 +16,7 @@ const PgSession = connectPgSimple(session);
 const port = Number(process.env.API_PORT || 3000);
 const secureCookies = process.env.COOKIE_SECURE !== 'false';
 
+mkdirSync('/data/uploads', { recursive: true });
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
@@ -65,6 +69,13 @@ async function initDb() {
   }
 }
 const isAdmin = (req,res,next) => req.session?.adminId ? next() : res.status(401).json({ error:'Sessão administrativa necessária.' });
+app.use('/uploads', express.static('/data/uploads', { maxAge: '1d', immutable: true, dotfiles: 'deny' }));
+const allowedImageTypes = { 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/avif':'avif' };
+const imageUpload = multer({ storage: multer.diskStorage({ destination: '/data/uploads', filename: (_req,file,cb) => cb(null, randomUUID() + '.' + (allowedImageTypes[file.mimetype] || 'bin')) }), fileFilter: (_req,file,cb) => allowedImageTypes[file.mimetype] ? cb(null,true) : cb(new Error('Formato não permitido. Use JPG, PNG, WebP ou AVIF.')), limits: { fileSize: 5 * 1024 * 1024 } });
+app.post('/api/admin/uploads', isAdmin, imageUpload.single('image'), (req,res) => {
+  if (!req.file) return res.status(400).json({ error:'Selecione uma imagem.' });
+  res.status(201).json({ url:'/uploads/' + req.file.filename, filename:req.file.filename, size:req.file.size });
+});
 const publicProduct = p => ({...p, nutrition: p.nutrition || {}});
 
 app.get('/api/health', async (_req,res) => {
