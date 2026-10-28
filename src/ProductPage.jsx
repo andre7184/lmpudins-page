@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 
 export default function ProductPage() {
-  const slug = decodeURIComponent(window.location.pathname.replace(/^\\/produto\\/?/, '').split('/')[0] || '');
+  const slug = decodeURIComponent(window.location.pathname.split('/').filter(Boolean)[1] || '');
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
