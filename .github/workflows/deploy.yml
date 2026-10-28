@@ -96,7 +96,7 @@ jobs:
             def dotenv_quote(value):
                 if "\n" in value or "\r" in value:
                     raise SystemExit("ERRO: variaveis de ambiente nao podem conter quebras de linha.")
-                return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
+                return "'" + value.replace("'", "\\'") + "'"
 
             required = ["DATABASE_URL", "SESSION_SECRET", "ADMIN_USERNAME", "ADMIN_PASSWORD", "POSTGRES_PASSWORD"]
             missing = [key for key in required if not os.environ.get(key)]
