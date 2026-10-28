@@ -8,6 +8,7 @@ on:
         required: true
         type: choice
         options:
+          - versao_0-2
           - admin-catalogo-produtos
           - main
         default: admin-catalogo-produtos
