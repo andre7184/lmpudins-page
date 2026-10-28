@@ -127,7 +127,12 @@ app.delete('/api/admin/products/:id', isAdmin, async (req,res) => {
   if (!result.rowCount) return res.status(404).json({error:'Produto não encontrado.'});
   res.status(204).end();
 });
-app.use((err,_req,res,_next) => { console.error('API error:',err); res.status(500).json({error:'Erro interno do servidor.'}); });
+app.use((err,_req,res,_next) => {
+  if (err instanceof multer.MulterError) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'A imagem deve ter no máximo 5 MB.' : 'Não foi possível receber o arquivo.' });
+  if (err.message?.startsWith('Formato não permitido.')) return res.status(400).json({ error: err.message });
+  console.error('API error:',err);
+  res.status(500).json({error:'Erro interno do servidor.'});
+});
 
 initDb().then(() => app.listen(port,'0.0.0.0',() => console.log(`LM Pudins API ouvindo na porta ${port}`)))
   .catch(err => { console.error('Falha ao inicializar banco:',err); process.exit(1); });
