@@ -1,0 +1,63 @@
+name: Deploy LM Pudins to VPS
+
+on:
+  push:
+    branches:
+      - versao_0-1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy through SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: deployer
+          key: ${{ secrets.VPS_SSH_KEY }}
+          timeout: 30s
+          command_timeout: 10m
+          script_stop: true
+          script: |
+            set -eu
+
+            SITE_DIR="$HOME/lmpudins.com.br/www"
+
+            echo "==> SSH conectado. Diretorio do site: $SITE_DIR"
+            mkdir -p "$HOME/lmpudins.com.br"
+
+            if [ -d "$SITE_DIR/.git" ]; then
+              echo "==> Repositorio existente; atualizando branch versao_0-1"
+              cd "$SITE_DIR"
+              git fetch origin
+              git checkout versao_0-1
+              git pull --ff-only origin versao_0-1
+            else
+              if [ -e "$SITE_DIR" ] && [ -n "$(find "$SITE_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
+                echo "ERRO: $SITE_DIR ja existe e nao esta vazio, mas nao contem .git. Nenhum arquivo foi apagado."
+                exit 1
+              fi
+
+              echo "==> Clonando repositorio na branch versao_0-1 para $SITE_DIR"
+              git clone --branch versao_0-1 https://github.com/andre7184/lmpudins-page.git "$SITE_DIR"
+              cd "$SITE_DIR"
+            fi
+
+            echo "==> Validando configuracao do Docker Compose"
+            docker compose config --quiet
+
+            echo "==> Construindo e iniciando o site"
+            docker compose up -d --build --remove-orphans
+
+            echo "==> Estado dos containers"
+            docker compose ps
+
+            echo "==> Limpando imagens antigas sem uso"
+            docker image prune -f
+
+            echo "==> Deploy concluido"
