@@ -51,6 +51,7 @@ function ProductModal({ product, onClose }) {
     return () => { document.removeEventListener('keydown', closeOnEscape); document.body.style.overflow = ''; };
   }, [product, onClose]);
   if (!product) return null;
+  const nutritionEntries = Object.entries(product.nutrition || {}).filter(([key, value]) => key && value !== null && value !== '');
   return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
     <section className="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <button className="modal-close" onClick={onClose} aria-label="Fechar detalhes"><X /></button>
@@ -60,6 +61,7 @@ function ProductModal({ product, onClose }) {
         <h2 id="modal-title">{product.name}</h2>
         <p>{product.description}</p>
         <div className="ingredient-block"><span>INGREDIENTES DO CATÁLOGO</span><p>{product.ingredients}</p></div>
+        {nutritionEntries.length > 0 && <div className="ingredient-block"><span>INFORMAÇÃO NUTRICIONAL</span><table style={{width:"100%",borderCollapse:"collapse",marginTop:10,fontSize:13}}><tbody>{nutritionEntries.map(([key,value]) => <tr key={key} style={{borderBottom:"1px solid #8a6b5044"}}><th scope="row" style={{textAlign:"left",padding:"7px 8px 7px 0",fontWeight:500}}>{key.replaceAll("_"," ")}</th><td style={{textAlign:"right",padding:"7px 0 7px 8px"}}>{typeof value === "object" ? JSON.stringify(value) : String(value)}</td></tr>)}</tbody></table></div>}
         <a className="button button-gold" href="#pedidos" onClick={onClose}>Tenho interesse <ArrowRight size={16} /></a>
         <small>Consulte disponibilidade e informações do produto diretamente com a marca.</small>
       </div>
