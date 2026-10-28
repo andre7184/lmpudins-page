@@ -617,13 +617,13 @@ A branch `deploy-vps-traefik` contém a configuração de publicação do site e
 
 ### Publicação automática
 
-O workflow `.github/workflows/deploy.yml` executa quando há push para `deploy-vps-traefik` e também pode ser iniciado manualmente pela aba **Actions**. Ele atualiza o checkout na VPS e executa `docker compose up -d --build`.
+O workflow `.github/workflows/deploy.yml` executa quando há push para `deploy-vps-traefik` e também pode ser iniciado manualmente pela aba **Actions**. Ele mantém o checkout em `~/lmpudins.com.br/www`, seguindo o padrão de pastas do servidor, e executa `docker compose up -d --build --remove-orphans`. O workflow exibe marcadores por etapa e interrompe o deploy se o diretório de destino já contiver arquivos sem ser um checkout Git, sem apagar esses arquivos.
 
 O Compose configura o roteador HTTPS do Traefik para `www.lmpudins.com.br`, usando o resolvedor `letsencrypt`. A emissão do certificado depende de DNS correto, portas públicas 80/443 acessíveis e Traefik operacional.
 
 ### WhatsApp opcional
 
-Se desejar configurar o botão de WhatsApp, crie ou edite o arquivo `~/lmpudins-page/.env` na VPS com:
+Se desejar configurar o botão de WhatsApp, crie ou edite o arquivo `~/lmpudins.com.br/www/.env` na VPS com:
 
 ```env
 VITE_WHATSAPP_NUMBER=55DDDNUMERO
