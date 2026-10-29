@@ -530,21 +530,15 @@ async function initDb() {
   await pool.query(`CREATE TABLE IF NOT EXISTS catalog_seed_versions (
     version TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
-  const seedVersion = 'catalogo-nutricional-2026-10-v1';
-  const seedCheck = await pool.query('SELECT 1 FROM catalog_seed_versions WHERE version=$1', [seedVersion]);
-  if (seedCheck.rowCount === 0) {
-    for (const p of initialProducts) {
-      await pool.query(`INSERT INTO products (slug,name,short_description,description,ingredients,image,category,sort_order,nutrition)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)
-        ON CONFLICT (slug) DO UPDATE SET
-          name=EXCLUDED.name, short_description=EXCLUDED.short_description,
-          description=EXCLUDED.description, ingredients=EXCLUDED.ingredients,
-          image=EXCLUDED.image, category=EXCLUDED.category, sort_order=EXCLUDED.sort_order,
-          nutrition=EXCLUDED.nutrition, updated_at=NOW()`,
-        [p.slug,p.name,p.short_description,p.description,p.ingredients,p.image,p.category,p.sort_order,JSON.stringify(p.nutrition)]);
-    }
-    await pool.query('INSERT INTO catalog_seed_versions (version) VALUES ($1) ON CONFLICT DO NOTHING', [seedVersion]);
+  // Reinsere apenas produtos-padrão ausentes, sem sobrescrever edições feitas pelo admin.
+  for (const p of initialProducts) {
+    await pool.query(`INSERT INTO products (slug,name,short_description,description,ingredients,image,category,sort_order,nutrition)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)
+      ON CONFLICT (slug) DO NOTHING`,
+      [p.slug,p.name,p.short_description,p.description,p.ingredients,p.image,p.category,p.sort_order,JSON.stringify(p.nutrition)]);
   }
+  const seedVersion = 'catalogo-nutricional-2026-10-v1';
+  await pool.query('INSERT INTO catalog_seed_versions (version) VALUES ($1) ON CONFLICT DO NOTHING', [seedVersion]);
   if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
     const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
     await pool.query(`INSERT INTO admin_users (username,password_hash) VALUES ($1,$2)
