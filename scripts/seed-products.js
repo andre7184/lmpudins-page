@@ -36,8 +36,20 @@ async function seedProducts() {
     );
     if (result.rowCount) inserted += 1;
   }
+  const expectedSlugs = products.map((product) => product.id || product.slug);
+  const verification = await pool.query(
+    'SELECT slug, active FROM products WHERE slug = ANY($1::text[]) ORDER BY sort_order, slug',
+    [expectedSlugs],
+  );
+  const activeSlugs = new Set(verification.rows.filter((row) => row.active).map((row) => row.slug));
+  const missing = expectedSlugs.filter((slug) => !activeSlugs.has(slug));
   const total = await pool.query('SELECT COUNT(*)::int AS total FROM products');
-  console.log(`Carga do catálogo concluída: ${inserted} inserido(s); ${total.rows[0].total} produto(s) no banco.`);
+  console.log(`Verificação PostgreSQL: ${verification.rowCount}/${expectedSlugs.length} produtos padrão encontrados; ${activeSlugs.size} ativos; total geral: ${total.rows[0].total}.`);
+  console.log('Slugs encontrados:', verification.rows.map((row) => `${row.slug} (ativo=${row.active})`).join(', '));
+  if (missing.length) {
+    throw new Error(`Produtos ausentes ou inativos no banco: ${missing.join(', ')}`);
+  }
+  console.log(`Carga do catálogo concluída: ${inserted} inserido(s); banco validado.`);
 }
 
 seedProducts()
