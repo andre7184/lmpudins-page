@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowDown, ArrowRight, ArrowUpRight, Check, Menu, X, Sparkles, Heart, Instagram, MessageCircle, ChevronDown } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUpRight, ArrowLeft, Check, Menu, X, Sparkles, Heart, Instagram, MessageCircle, ChevronDown } from 'lucide-react';
 import { products as fallbackProducts } from './products.js';
 
 function Logo({ compact = false }) {
@@ -101,6 +101,7 @@ function App() {
   const [scrolled, setScrolled] = useState(false);
   const [contact, setContact] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
   const filters = ['Todos', 'Frutados', 'Intensos', 'Cremosos'];
   useEffect(() => {
     let cancelled = false;
@@ -113,6 +114,19 @@ function App() {
     }).catch(() => {}).finally(() => {});
     return () => { cancelled = true; };
   }, []);
+  const galleryItems = catalogProducts.flatMap((product) => {
+    const extraImages = Array.isArray(product.images) ? product.images : Array.isArray(product.gallery) ? product.gallery : [];
+    const normalized = extraImages.map((item) => typeof item === 'string' ? { src: item, caption: '' } : {
+      src: item?.url || item?.src || item?.image || item?.path || '',
+      caption: item?.description || item?.caption || item?.alt || item?.title || ''
+    }).filter((item) => item.src);
+    if (product.image && !normalized.some((item) => item.src === product.image)) {
+      normalized.unshift({ src: product.image, caption: product.name });
+    }
+    return normalized.map((item, index) => ({ ...item, product, key: `${product.slug || product.id}-${item.src}-${index}` }));
+  });
+  const moveGallery = (step) => setGalleryIndex((current) => galleryItems.length ? (current + step + galleryItems.length) % galleryItems.length : 0);
+  const visibleGalleryItems = galleryItems.length ? Array.from({ length: Math.min(5, galleryItems.length) }, (_, offset) => galleryItems[(galleryIndex + offset) % galleryItems.length]) : [];
   const visibleProducts = catalogProducts.filter((p) => {
     if (activeFilter === 'Todos') return true;
     if (activeFilter === 'Frutados') return p.category === 'Frutados' || ['berry','orange','passion','guava'].includes(p.tone);
@@ -141,7 +155,7 @@ function App() {
       <div className="header-inner"><Logo />
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuOpen}>{menuOpen ? <X /> : <Menu />}</button>
         <nav className={menuOpen ? 'nav nav-open' : 'nav'} aria-label="Navegação principal">
-          <a href="#inicio" onClick={closeMenu}>Início</a><a href="#sabores" onClick={closeMenu}>Sabores</a><a href="#essencia" onClick={closeMenu}>Sobre nós</a><a href="#galeria" onClick={closeMenu}>Galeria</a><a href="#pedidos" onClick={closeMenu}>Pedidos</a><a href="#contato" onClick={closeMenu}>Contato</a>
+          <a href="#inicio" onClick={closeMenu}>Início</a><a href="#sabores" onClick={closeMenu}>Sabores</a><a href="#quem-somos" onClick={closeMenu}>Quem somos</a><a href="#galeria" onClick={closeMenu}>Galeria</a><a href="#pedidos" onClick={closeMenu}>Pedidos</a><a href="#contato" onClick={closeMenu}>Contato</a>
           <a className="nav-cta" href="#pedidos" onClick={closeMenu}>Comprar agora <ArrowUpRight size={15} /></a>
         </nav>
       </div>
@@ -186,14 +200,15 @@ function App() {
       </section>
 
       <section className="gallery-section" id="galeria">
-        <div className="gallery-intro"><span className="eyebrow eyebrow-gold">GALERIA GASTRONÔMICA</span><h2>Beleza que<br /><em>se saboreia</em></h2><p>Cada pudim é uma obra de arte, feita para encantar seus olhos e conquistar seu paladar.</p><a className="button button-quiet" href="#sabores">Ver nossos sabores <ArrowRight size={16}/></a></div>
-        <div className="gallery-mosaic">
-          <button type="button" className="gallery-photo gallery-photo-main" onClick={() => setSelectedProduct(catalogProducts[0])}><img src="/images/pudins/frutas-vermelhas.jfif" alt="Pudim de frutas vermelhas" loading="lazy"/><span>Frutas Vermelhas</span></button>
-          <button type="button" className="gallery-photo" onClick={() => setSelectedProduct(catalogProducts[2])}><img src="/images/pudins/chocolate-cafe.jfif" alt="Pudim de chocolate com café" loading="lazy"/><span>Chocolate com Café</span></button>
-          <button type="button" className="gallery-photo" onClick={() => setSelectedProduct(catalogProducts[4])}><img src="/images/pudins/maracuja.jfif" alt="Pudim de maracujá" loading="lazy"/><span>Maracujá</span></button>
-          <button type="button" className="gallery-photo" onClick={() => setSelectedProduct(catalogProducts[1])}><img src="/images/pudins/laranja.jfif" alt="Pudim de laranja" loading="lazy"/><span>Laranja</span></button>
-          <button type="button" className="gallery-photo" onClick={() => setSelectedProduct(catalogProducts[6])}><img src="/images/pudins/romeu-julieta.jfif" alt="Pudim Romeu e Julieta" loading="lazy"/><span>Romeu e Julieta</span></button>
+        <div className="gallery-intro"><span className="eyebrow eyebrow-gold">GALERIA GASTRONÔMICA</span><h2>Beleza que<br /><em>se saboreia</em></h2><p>Conheça nossos sabores em imagens. A galeria reúne automaticamente as fotos cadastradas nos produtos.</p><div className="gallery-controls"><button type="button" onClick={() => moveGallery(-1)} aria-label="Imagens anteriores" disabled={galleryItems.length < 2}><ArrowLeft size={17}/></button><span>{galleryItems.length ? String(galleryIndex + 1).padStart(2,'0') : '00'} / {String(galleryItems.length).padStart(2,'0')}</span><button type="button" onClick={() => moveGallery(1)} aria-label="Próximas imagens" disabled={galleryItems.length < 2}><ArrowRight size={17}/></button></div><a className="button button-quiet" href="#sabores">Ver nossos sabores <ArrowRight size={16}/></a></div>
+        <div className="gallery-carousel" aria-live="polite">
+          {visibleGalleryItems.map((item, index) => <button type="button" className={index === 0 ? 'gallery-photo gallery-photo-main' : 'gallery-photo'} key={item.key} onClick={() => setSelectedProduct(item.product)} aria-label={`Ver produto ${item.product.name}: ${item.caption || 'imagem'}`}><img src={item.src} alt={item.caption || item.product.name} loading="lazy"/><span>{item.caption || item.product.name}</span></button>)}
+          {!galleryItems.length && <p className="gallery-empty">As imagens dos produtos aparecerão aqui quando o catálogo estiver disponível.</p>}
         </div>
+      </section>
+      <section className="about-section" id="quem-somos">
+        <div className="about-mark"><img src="/images/Logo%20circular.png" alt="Logo da LM Pudins" loading="lazy"/></div>
+        <div className="about-copy"><span className="eyebrow eyebrow-gold">QUEM SOMOS</span><h2>Uma paixão que virou<br/><em>doce propósito.</em></h2><p>A LM Pudins surgiu do carinho pela confeitaria e da vontade de transformar receitas em momentos especiais. Acreditamos que uma sobremesa pode reunir pessoas, celebrar conquistas e tornar simples encontros em lembranças gostosas.</p><p>Nossa ideia é unir sabor, cuidado artesanal e ingredientes selecionados em pudins feitos com atenção a cada detalhe — do preparo à apresentação — para levar um pouco mais de doçura ao dia de cada cliente.</p><a className="button button-quiet" href="#sabores">Conheça nossos sabores <ArrowRight size={16}/></a></div>
       </section>
 
       <section className="contact-section" id="pedidos">
