@@ -156,7 +156,7 @@ function App() {
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuOpen}>{menuOpen ? <X /> : <Menu />}</button>
         <nav className={menuOpen ? 'nav nav-open' : 'nav'} aria-label="Navegação principal">
           <a href="#inicio" onClick={closeMenu}>Início</a><a href="#sabores" onClick={closeMenu}>Sabores</a><a href="#quem-somos" onClick={closeMenu}>Quem somos</a><a href="#galeria" onClick={closeMenu}>Galeria</a><a href="#pedidos" onClick={closeMenu}>Pedidos</a><a href="#contato" onClick={closeMenu}>Contato</a>
-          <a className="nav-cta" href="#pedidos" onClick={closeMenu}>Comprar agora <ArrowUpRight size={15} /></a>
+          <a className="nav-cta" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>Peça pelo iFood <ArrowUpRight size={15} /></a>
         </nav>
       </div>
     </header>
@@ -168,7 +168,7 @@ function App() {
           <span className="eyebrow eyebrow-gold"><span className="eyebrow-line" /> PUDINS ARTESANAIS</span>
           <h1>Mais que uma sobremesa,<br /><em>é uma experiência!</em></h1>
           <p>Na LM Pudins, cada sabor é cuidadosamente preparado para despertar o melhor dos seus momentos. Cremosos, irresistíveis e feitos com ingredientes selecionados.</p>
-          <div className="hero-actions"><a className="button button-gold" href="#sabores"><span aria-hidden="true">🛒</span> Conheça nossos sabores <ArrowRight size={17} /></a></div>
+          <div className="hero-actions"><a className="button button-gold" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">🛵</span> Peça pelo iFood <ArrowUpRight size={17} /></a><a className="button button-quiet" href="#sabores">Conheça nossos sabores <ArrowRight size={17} /></a></div>
           
         </div>
         <div className="hero-stage">
@@ -219,7 +219,7 @@ function App() {
       </section>
     </main>
 
-    <footer className="site-footer"><div className="footer-top"><Logo compact /><p>LM Pudins<br />A sobremesa perfeita para adoçar sua vida!</p><a className="footer-back" href="#inicio">Voltar ao topo ↑</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="Fale com a LM Pudins pelo WhatsApp"><MessageCircle size={16} /></a><a href="https://www.instagram.com/lmpudinsgourmet/" target="_blank" rel="noopener noreferrer" aria-label="Instagram da LM Pudins"><Instagram size={16} /></a></span></div></footer>
+    <footer className="site-footer"><div className="footer-top"><Logo compact /><p>LM Pudins<br />A sobremesa perfeita para adoçar sua vida!</p><a className="footer-back" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer">Peça pelo iFood ↗</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="Fale com a LM Pudins pelo WhatsApp"><MessageCircle size={16} /></a><a href="https://www.instagram.com/lmpudinsgourmet/" target="_blank" rel="noopener noreferrer" aria-label="Instagram da LM Pudins"><Instagram size={16} /></a></span></div></footer>
     <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
   </>;
 }
