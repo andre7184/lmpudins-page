@@ -123,3 +123,35 @@ body { font-size: 16px; }
   .modal-copy h2 { font-size: 32px; }
   .nutrition-table { font-size: 11px; }
 }
+
+
+/* Ficha individual do produto: galeria, legenda e layout responsivo */
+.product-page-header { flex-wrap:wrap; }
+.product-page-gallery { border-radius:3px; }
+.product-page-gallery button:disabled { opacity:.35; cursor:default; }
+.product-page-gallery button:focus-visible,
+.product-page-info-grid a:focus-visible { outline:2px solid #e5c780; outline-offset:3px; }
+.product-page-info-grid h2 { margin:0 0 12px; color:#fff0dc; font:400 clamp(24px,2.5vw,32px)/1.2 Georgia,serif; }
+.product-page-info-grid p,.product-page-info-grid td,.product-page-info-grid th { overflow-wrap:anywhere; }
+@media (max-width:720px) {
+  .product-page-header { align-items:flex-start !important; gap:14px !important; }
+  .product-page-header img { width:130px !important; }
+  .product-page-header nav { gap:12px !important; }
+  .product-page-header nav a { font-size:12px !important; }
+  .product-page-gallery { height:clamp(300px,100vw,480px) !important; }
+  .product-page-gallery img { padding:12px 34px 82px !important; }
+  .product-page-gallery button[aria-label="Imagem anterior"],
+  .product-page-gallery button[aria-label="Próxima imagem"] { width:36px !important; height:44px !important; }
+  .product-page-gallery button[aria-label="Imagem anterior"] { left:7px !important; }
+  .product-page-gallery button[aria-label="Próxima imagem"] { right:7px !important; }
+  .product-page-gallery > div[style*="linear-gradient"] { padding:12px 14px !important; gap:8px !important; }
+  .product-page-gallery > div[style*="linear-gradient"] p { font-size:12px !important; }
+  .product-page-info-grid { grid-template-columns:minmax(0,1fr) !important; gap:12px !important; }
+}
+@media (max-width:420px) {
+  .product-page-header { flex-direction:column; }
+  .product-page-header nav { justify-content:space-between !important; width:100%; }
+  .product-page-gallery { height:320px !important; }
+  .product-page-gallery img { padding:8px 25px 88px !important; }
+  .product-page-gallery > div[style*="linear-gradient"] p { font-size:11px !important; }
+}
