@@ -126,7 +126,7 @@ function App() {
     return normalized.map((item, index) => ({ ...item, product, key: `${product.slug || product.id}-${item.src}-${index}` }));
   });
   const moveGallery = (step) => setGalleryIndex((current) => galleryItems.length ? (current + step + galleryItems.length) % galleryItems.length : 0);
-  const visibleGalleryItems = galleryItems.length ? Array.from({ length: Math.min(5, galleryItems.length) }, (_, offset) => galleryItems[(galleryIndex + offset) % galleryItems.length]) : [];
+  const visibleGalleryItem = galleryItems.length ? galleryItems[galleryIndex % galleryItems.length] : null;
   const visibleProducts = catalogProducts.filter((p) => {
     if (activeFilter === 'Todos') return true;
     if (activeFilter === 'Frutados') return p.category === 'Frutados' || ['berry','orange','passion','guava'].includes(p.tone);
@@ -200,10 +200,11 @@ function App() {
       </section>
 
       <section className="gallery-section" id="galeria">
-        <div className="gallery-intro"><span className="eyebrow eyebrow-gold">GALERIA GASTRONÔMICA</span><h2>Beleza que<br /><em>se saboreia</em></h2><p>Conheça nossos sabores em imagens. A galeria reúne automaticamente as fotos cadastradas nos produtos.</p><div className="gallery-controls"><button type="button" onClick={() => moveGallery(-1)} aria-label="Imagens anteriores" disabled={galleryItems.length < 2}><ArrowLeft size={17}/></button><span>{galleryItems.length ? String(galleryIndex + 1).padStart(2,'0') : '00'} / {String(galleryItems.length).padStart(2,'0')}</span><button type="button" onClick={() => moveGallery(1)} aria-label="Próximas imagens" disabled={galleryItems.length < 2}><ArrowRight size={17}/></button></div><a className="button button-quiet" href="#sabores">Ver nossos sabores <ArrowRight size={16}/></a></div>
+        <div className="gallery-intro"><span className="eyebrow eyebrow-gold">GALERIA GASTRONÔMICA</span><h2>Beleza que<br /><em>se saboreia</em></h2><p>Conheça nossos sabores em imagens. A galeria reúne automaticamente as fotos cadastradas nos produtos.</p><div className="gallery-counter">{galleryItems.length ? String(galleryIndex + 1).padStart(2,'0') : '00'} / {String(galleryItems.length).padStart(2,'0')}</div><a className="button button-quiet" href="#sabores">Ver nossos sabores <ArrowRight size={16}/></a></div>
         <div className="gallery-carousel" aria-live="polite">
-          {visibleGalleryItems.map((item, index) => <button type="button" className={index === 0 ? 'gallery-photo gallery-photo-main' : 'gallery-photo'} key={item.key} onClick={() => setSelectedProduct(item.product)} aria-label={`Ver produto ${item.product.name}: ${item.caption || 'imagem'}`}><img src={item.src} alt={item.caption || item.product.name} loading="lazy"/><span>{item.caption || item.product.name}</span></button>)}
-          {!galleryItems.length && <p className="gallery-empty">As imagens dos produtos aparecerão aqui quando o catálogo estiver disponível.</p>}
+          <button className="gallery-arrow" type="button" onClick={() => moveGallery(-1)} aria-label="Imagem anterior" disabled={galleryItems.length < 2}><ArrowLeft size={22}/></button>
+          {visibleGalleryItem ? <button type="button" className="gallery-photo gallery-photo-main" key={visibleGalleryItem.key} onClick={() => setSelectedProduct(visibleGalleryItem.product)} aria-label={`Ver produto ${visibleGalleryItem.product.name}: ${visibleGalleryItem.caption || 'imagem'}`}><img src={visibleGalleryItem.src} alt={visibleGalleryItem.caption || visibleGalleryItem.product.name} loading="lazy"/><span>{visibleGalleryItem.caption || visibleGalleryItem.product.name}</span></button> : <p className="gallery-empty">As imagens dos produtos aparecerão aqui quando o catálogo estiver disponível.</p>}
+          <button className="gallery-arrow" type="button" onClick={() => moveGallery(1)} aria-label="Próxima imagem" disabled={galleryItems.length < 2}><ArrowRight size={22}/></button>
         </div>
       </section>
       <section className="about-section" id="quem-somos">
