@@ -1,7 +1,7 @@
 const $ = id => document.getElementById(id);
 let products = [], selectedId = null;
 async function api(path, options={}) {
-  const response = await fetch(path,{credentials:'same-origin',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
+  const response = await fetch(path,{cache:'no-store',credentials:'same-origin',...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
   if(response.status===204) return null;
   const data = await response.json().catch(()=>({error:'Resposta inválida do servidor.'}));
   if(!response.ok) throw new Error(data.error || 'Não foi possível concluir a operação.');
@@ -14,8 +14,31 @@ function closeModal(){$('product-modal').classList.add('hidden');document.body.s
 function clearForm(){selectedId=null;$('product-form').reset();$('product-id').value='';$('sort-order').value='0';$('active').checked=true;$('nutrition').value='{}';$('delete-product').classList.add('hidden');status('form-status','');renderList();openModal('Novo produto')}
 function fillForm(p){selectedId=p.id;$('product-id').value=p.id;$('slug').value=p.slug;$('name').value=p.name;$('category').value=p.category||'Cremosos';$('sort-order').value=p.sort_order||0;$('short-description').value=p.short_description||'';$('description').value=p.description||'';$('ingredients').value=p.ingredients||'';$('image').value=p.image||'';$('gallery-images').value=JSON.stringify(Array.isArray(p.images)?p.images:[],null,2);$('gallery-caption').value='';$('nutrition').value=JSON.stringify(p.nutrition||{},null,2);$('active').checked=!!p.active;$('delete-product').classList.remove('hidden');status('form-status','');renderList();openModal('Editar produto')}
 function renderList(){const list=$('product-list');list.replaceChildren();if(!products.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Nenhum produto cadastrado.';list.appendChild(empty);return}products.forEach(p=>{const card=document.createElement('article');card.className='product-card';const img=document.createElement('img');img.src=p.image||'/images/Logo%20circular.png';img.alt=p.name;img.loading='lazy';const body=document.createElement('div');body.className='product-card-body';const name=document.createElement('strong');name.textContent=p.name;const meta=document.createElement('small');meta.textContent=(p.category||'Sem categoria')+' · '+(p.active?'Publicado':'Rascunho');const actions=document.createElement('div');actions.className='product-card-actions';const count=document.createElement('small');count.textContent=((Array.isArray(p.images)?p.images.length:0)+(p.image?1:0))+' imagem(ns)';const edit=document.createElement('button');edit.type='button';edit.className='btn primary';edit.textContent='Editar';edit.addEventListener('click',()=>fillForm(p));actions.append(count,edit);body.append(name,meta,actions);card.append(img,body);list.appendChild(card)})}
-async function loadProducts(){try{products=await api('/api/admin/products');renderList()}catch(err){products=[];renderList();throw new Error('Não foi possível carregar os produtos do banco: '+err.message)}}
-async function checkSession(){try{await api('/api/auth/me');showDashboard(true);await loadProducts();}catch(err){showDashboard(false);status('login-status',err.message)}}
+async function loadProducts(){
+  status('products-status','Carregando produtos do banco…');
+  try {
+    const data=await api('/api/admin/products');
+    if(!Array.isArray(data)) throw new Error('A API administrativa não retornou uma lista de produtos.');
+    products=data;
+    renderList();
+    status('products-status',products.length ? products.length+' produto(s) carregado(s).' : 'O banco respondeu corretamente, mas não há produtos cadastrados.');
+  } catch(err) {
+    products=[];
+    renderList();
+    status('products-status','Falha ao carregar produtos: '+err.message);
+    throw err;
+  }
+}
+async function checkSession(){
+  try {
+    await api('/api/auth/me');
+    showDashboard(true);
+    await loadProducts();
+  } catch(err) {
+    showDashboard(false);
+    status('login-status',err.message);
+  }
+}
 $('login-form').addEventListener('submit',async e=>{e.preventDefault();status('login-status','Entrando…');try{await api('/api/auth/login',{method:'POST',body:JSON.stringify({username:$('username').value,password:$('password').value})});$('password').value='';showDashboard(true);await loadProducts();status('login-status','')}catch(err){status('login-status',err.message)}});
 $('logout').addEventListener('click',async()=>{try{await api('/api/auth/logout',{method:'POST'})}finally{showDashboard(false)}});
 $('new-product').addEventListener('click',clearForm);
