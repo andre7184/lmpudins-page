@@ -78,7 +78,7 @@ export default function ProductPage() {
   const imageCaption = currentImage.caption || `Conheça de perto o sabor ${product.name} da LM Pudins.`;
 
   return <main style={styles.page}>
-    <header style={styles.header}>
+    <header className="product-page-header" style={styles.header}>
       <a href="/" aria-label="LM Pudins"><img src="/images/Logo%20horizontal.png" alt="LM Pudins" style={styles.logo}/></a>
       <nav style={styles.headerLinks}>
         <a href="/#sabores" style={styles.back}><ArrowLeft size={16}/> Todos os sabores</a>
@@ -92,7 +92,7 @@ export default function ProductPage() {
     </div>
 
     <section style={styles.gallerySection} aria-label={`Galeria de imagens de ${product.name}`}>
-      <div style={styles.gallery}>
+      <div className="product-page-gallery" style={styles.gallery}>
         <button type="button" style={{...styles.galleryArrow,...styles.arrowLeft}} onClick={() => moveImage(-1)} aria-label="Imagem anterior" disabled={images.length < 2}><ChevronLeft size={27}/></button>
         <button type="button" style={styles.imageButton} onClick={() => setLightboxOpen(true)} aria-label="Ampliar imagem">
           <img key={currentImage.src} src={currentImage.src} alt={currentImage.caption || product.name} style={styles.galleryImage}/>
@@ -100,7 +100,7 @@ export default function ProductPage() {
         </button>
         <button type="button" style={{...styles.galleryArrow,...styles.arrowRight}} onClick={() => moveImage(1)} aria-label="Próxima imagem" disabled={images.length < 2}><ChevronRight size={27}/></button>
         {images.length > 1 && <div style={styles.imageCounter}>{String(activeImage + 1).padStart(2,'0')} / {String(images.length).padStart(2,'0')}</div>}
-        <div style={styles.captionBar}><span style={styles.captionMark}>✦</span><p>{imageCaption}</p></div>
+        <div style={styles.captionBar}><span style={styles.captionMark}>✦</span><p style={styles.captionText}>{imageCaption}</p></div>
       </div>
       {images.length > 1 && <div style={styles.dots} aria-label="Selecionar imagem">{images.map((image, index) => <button key={image.src + index} type="button" onClick={() => setActiveImage(index)} aria-label={`Ver imagem ${index + 1}`} style={{...styles.dot, ...(index === activeImage ? styles.dotActive : {})}} />)}</div>}
     </section>
@@ -111,7 +111,7 @@ export default function ProductPage() {
         <h2>Um sabor para <em>guardar na memória.</em></h2>
         <p style={styles.description}>{product.description || product.short_description || 'Uma experiência especial da coleção LM Pudins.'}</p>
       </section>
-      <div style={styles.infoGrid}>
+      <div className="product-page-info-grid" style={styles.infoGrid}>
         <section style={styles.section}>
           <h2>Ingredientes</h2>
           <p>{product.ingredients || 'Consulte a embalagem para ver a lista de ingredientes.'}</p>
@@ -172,6 +172,7 @@ const styles = {
   expandHint:{position:'absolute',right:20,top:20,display:'inline-flex',alignItems:'center',gap:7,padding:'9px 12px',background:'#1c1014c9',color:'#f5dfad',fontSize:12,letterSpacing:'.03em'},
   captionBar:{position:'absolute',zIndex:2,left:0,right:0,bottom:0,display:'flex',alignItems:'center',gap:12,padding:'17px 24px',background:'linear-gradient(0deg,rgba(18,7,8,.96),rgba(18,7,8,.76))',borderTop:'1px solid #d7b36a55',pointerEvents:'none'},
   captionMark:{color:'#e5c780',fontSize:16,flex:'none'},
+  captionText:{margin:0,fontSize:14,lineHeight:1.6,color:'#fff0dc'},
   dots:{display:'flex',justifyContent:'center',gap:9,padding:'18px 0 0'},
   dot:{width:8,height:8,borderRadius:20,border:0,background:'#8e7375',cursor:'pointer',padding:0},
   dotActive:{width:25,background:'#e5c780'},
