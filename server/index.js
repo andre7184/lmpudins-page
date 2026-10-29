@@ -31,7 +31,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true, sameSite: 'strict', secure: secureCookies, maxAge: 8 * 60 * 60 * 1000 }
+  cookie: { httpOnly: true, sameSite: 'lax', secure: secureCookies, maxAge: 8 * 60 * 60 * 1000 }
 }));
 
 const initialProducts = [
@@ -565,9 +565,22 @@ app.post('/api/auth/login', rateLimit({windowMs:15*60*1000, limit:10, standardHe
   const result = await pool.query('SELECT id, username, password_hash FROM admin_users WHERE username=$1', [username]);
   const user = result.rows[0];
   if (!user || !(await bcrypt.compare(password, user.password_hash))) return res.status(401).json({error:'Usuário ou senha inválidos.'});
-  req.session.adminId = user.id;
-  req.session.username = user.username;
-  res.json({user:{username:user.username}});
+  // Garante uma sessão nova e persiste o cookie antes de confirmar o login.
+  req.session.regenerate((regenerateError) => {
+    if (regenerateError) {
+      console.error('Falha ao criar sessão administrativa:', regenerateError);
+      return res.status(500).json({error:'Não foi possível iniciar a sessão administrativa.'});
+    }
+    req.session.adminId = user.id;
+    req.session.username = user.username;
+    req.session.save((saveError) => {
+      if (saveError) {
+        console.error('Falha ao salvar sessão administrativa:', saveError);
+        return res.status(500).json({error:'Não foi possível salvar a sessão administrativa.'});
+      }
+      res.json({user:{username:user.username}});
+    });
+  });
 });
 app.get('/api/auth/me', (req,res) => req.session?.adminId ? res.json({user:{username:req.session.username}}) : res.status(401).json({error:'Não autenticado.'}));
 app.post('/api/auth/logout', (req,res) => req.session.destroy(() => {res.clearCookie('lm_admin_session');res.status(204).end();}));
