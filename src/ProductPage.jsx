@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, X, Instagram } from 'lucide-react';
 
-const INSTAGRAM_URL = 'https://www.instagram.com/lmpudinsgurmet/';
+const INSTAGRAM_URL = 'https://www.instagram.com/lmpudinsgourmet/';
 const WHATSAPP_URL = 'https://wa.me/5567991173161';
 
 function getProductImages(product) {
