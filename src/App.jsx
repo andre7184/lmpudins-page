@@ -189,7 +189,7 @@ function App() {
       </section>
 
       <section className="catalog-section" id="sabores">
-        <div className="section-heading reveal"><div><span className="eyebrow eyebrow-gold">NOSSO CATÁLOGO</span><h2>7 Sabores Incríveis</h2></div><p>Sete personalidades, uma mesma paixão por sobremesas que ficam na memória.</p></div>
+        <div className="section-heading reveal"><div><span className="eyebrow eyebrow-gold">NOSSO CATÁLOGO</span><h2>{catalogProducts.length} {catalogProducts.length === 1 ? "Sabor Incrível" : "Sabores Incríveis"}</h2></div><p>Sete personalidades, uma mesma paixão por sobremesas que ficam na memória.</p></div>
         <div className="catalog-toolbar"><span className="catalog-count" aria-live="polite">{String(visibleProducts.length).padStart(2, '0')} {visibleProducts.length === 1 ? 'SABOR DISPONÍVEL' : 'SABORES PARA DESCOBRIR'}</span><div className="filter-list" role="group" aria-label="Filtrar sabores">{filters.map((filter) => <button type="button" key={filter} aria-pressed={activeFilter === filter} className={activeFilter === filter ? 'filter-button filter-active' : 'filter-button'} onClick={() => setActiveFilter(filter)}>{filter}</button>)}</div></div>
         <div className="product-grid">{visibleProducts.map((product) => <ProductCard key={product.id} product={product} onOpen={setSelectedProduct} />)}</div>
       </section>
