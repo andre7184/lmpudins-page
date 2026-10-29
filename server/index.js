@@ -599,8 +599,8 @@ app.put('/api/admin/products/:id', isAdmin, async (req,res) => {
   const p = req.body || {};
   if (!String(p.slug||'').match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) || !String(p.name||'').trim()) return res.status(400).json({error:'Informe nome e identificador (slug) válido.'});
   try {
-    const result = await pool.query(`UPDATE products SET slug=$1,name=$2,short_description=$3,description=$4,ingredients=$5,image=$6,images=$7::jsonb,category=$8,nutrition=$9::jsonb,active=$10,sort_order=$11,updated_at=NOW()
-      WHERE id=$12 RETURNING *`, [p.slug,p.name,p.short_description||'',p.description||'',p.ingredients||'',p.image||'',JSON.stringify(Array.isArray(p.images)?p.images:[]),p.category||'Cremosos',JSON.stringify(p.nutrition||{}),p.active!==false,Number(p.sort_order)||0,req.params.id]);
+    const result = await pool.query(`UPDATE products SET slug=$1,name=$2,short_description=$3,description=$4,ingredients=$5,image=$6,images=COALESCE($7::jsonb,images),category=$8,nutrition=$9::jsonb,active=$10,sort_order=$11,updated_at=NOW()
+      WHERE id=$12 RETURNING *`, [p.slug,p.name,p.short_description||'',p.description||'',p.ingredients||'',p.image||'',p.images === undefined ? null : JSON.stringify(Array.isArray(p.images)?p.images:[]),p.category||'Cremosos',JSON.stringify(p.nutrition||{}),p.active!==false,Number(p.sort_order)||0,req.params.id]);
     if (!result.rowCount) return res.status(404).json({error:'Produto não encontrado.'});
     res.json(publicProduct(result.rows[0]));
   } catch (e) { if(e.code==='23505') return res.status(409).json({error:'Já existe um produto com esse identificador.'}); throw e; }
