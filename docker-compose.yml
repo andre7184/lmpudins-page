@@ -13,6 +13,7 @@ services:
     networks: [traefik, app-internal]
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.lmpudins.rule=Host(`www.lmpudins.com.br`)"
       - "traefik.http.routers.lmpudins.entrypoints=websecure"
       - "traefik.http.routers.lmpudins.tls=true"
