@@ -16,7 +16,8 @@ O usuário inicial é criado apenas quando não existe usuário com aquele nome.
 
 - `GET /api/health`: verifica API e banco.
 - `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`.
-- `GET /api/products`: produtos publicados.
+- `GET /api/products`: produtos publicados, incluindo a imagem principal e a galeria `images` (lista de objetos com `url` e `description`).
+- No painel, o campo “Galeria de imagens e descrições” aceita JSON; selecione uma foto e use “Enviar para galeria” para anexá-la com uma descrição. Salve o produto para publicar. As imagens da galeria aparecem na ficha do produto e no carrossel da landing page.
 - `POST /api/admin/uploads`: upload autenticado de imagem (JPG, PNG, WebP ou AVIF, máximo 5 MB); os arquivos ficam no volume persistente `lm_pudins_uploads` e são servidos em `/uploads/`.
 - `GET/POST /api/admin/products`, `PUT/DELETE /api/admin/products/:id`: operações administrativas autenticadas.
 
