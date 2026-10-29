@@ -1,65 +1,58 @@
 name: Deploy LM Pudins to VPS
 
 on:
+  push:
+    branches:
+      - versao_0-2
   workflow_dispatch:
     inputs:
       deploy_branch:
-        description: "Branch to deploy to the production site"
+        description: "Branch to deploy to production"
         required: true
         type: choice
         options:
           - versao_0-2
-          - admin-catalogo-produtos
-          - main
-        default: admin-catalogo-produtos
+        default: versao_0-2
 
 permissions:
   contents: read
 
 jobs:
   deploy:
-    name: Build and deploy site
+    name: Build and deploy LM Pudins
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-      ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
-      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      COOKIE_SECURE: ${{ secrets.COOKIE_SECURE }}
-      VITE_WHATSAPP_NUMBER: ${{ secrets.VITE_WHATSAPP_NUMBER }}
-      DEPLOY_BRANCH: ${{ inputs.deploy_branch }}
     steps:
-      - name: Deploy through SSH
-        uses: appleboy/ssh-action@v1.2.2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
         env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
-          SESSION_SECRET: ${{ env.SESSION_SECRET }}
-          ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
-          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
-          POSTGRES_DB: ${{ env.POSTGRES_DB }}
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          COOKIE_SECURE: ${{ env.COOKIE_SECURE }}
-          VITE_WHATSAPP_NUMBER: ${{ env.VITE_WHATSAPP_NUMBER }}
-          DEPLOY_BRANCH: ${{ env.DEPLOY_BRANCH }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          COOKIE_SECURE: ${{ secrets.COOKIE_SECURE }}
+          VITE_WHATSAPP_NUMBER: ${{ secrets.VITE_WHATSAPP_NUMBER }}
+          DEPLOY_BRANCH: ${{ github.event.inputs.deploy_branch || 'versao_0-2' }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: deployer
           key: ${{ secrets.VPS_SSH_KEY }}
           timeout: 30s
-          command_timeout: 10m
-          script_stop: true
+          command_timeout: 15m
           envs: DATABASE_URL,SESSION_SECRET,ADMIN_USERNAME,ADMIN_PASSWORD,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,COOKIE_SECURE,VITE_WHATSAPP_NUMBER,DEPLOY_BRANCH
           script: |
             set -eu
 
             SITE_DIR="$HOME/lmpudins.com.br/www"
+            REPO_URL="https://github.com/andre7184/lmpudins-page.git"
 
-            echo "==> SSH conectado. Diretorio do site: $SITE_DIR"
-            echo "==> Branch solicitada: $DEPLOY_BRANCH"
+            echo "==> Diretorio: $SITE_DIR"
+            echo "==> Branch: $DEPLOY_BRANCH"
             mkdir -p "$HOME/lmpudins.com.br"
 
             if [ -d "$SITE_DIR/.git" ]; then
@@ -69,58 +62,67 @@ jobs:
               git pull --ff-only origin "$DEPLOY_BRANCH"
             else
               if [ -e "$SITE_DIR" ] && [ -n "$(find "$SITE_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
-                echo "ERRO: $SITE_DIR ja existe e nao esta vazio, mas nao contem .git. Nenhum arquivo foi apagado."
+                echo "ERRO: $SITE_DIR existe e nao esta vazio, mas nao e um repositorio Git. Nada foi apagado."
                 exit 1
               fi
-              git clone --branch "$DEPLOY_BRANCH" https://github.com/andre7184/lmpudins-page.git "$SITE_DIR"
+              git clone --branch "$DEPLOY_BRANCH" "$REPO_URL" "$SITE_DIR"
               cd "$SITE_DIR"
             fi
 
-            echo "==> Criando .env com permissoes restritas a partir dos GitHub Secrets"
+            echo "==> Validando secrets obrigatorios"
+            for key in DATABASE_URL SESSION_SECRET ADMIN_USERNAME ADMIN_PASSWORD POSTGRES_PASSWORD; do
+              eval "value=\${$key-}"
+              if [ -z "$value" ]; then
+                echo "ERRO: secret obrigatorio ausente: $key"
+                exit 1
+              fi
+            done
+
+            echo "==> Criando .env protegido"
             umask 077
+            export DATABASE_URL SESSION_SECRET ADMIN_USERNAME ADMIN_PASSWORD POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD COOKIE_SECURE VITE_WHATSAPP_NUMBER
             python3 - <<'PY'
             import os
             from pathlib import Path
 
             keys = [
-                "DATABASE_URL",
-                "SESSION_SECRET",
-                "ADMIN_USERNAME",
-                "ADMIN_PASSWORD",
-                "POSTGRES_DB",
-                "POSTGRES_USER",
-                "POSTGRES_PASSWORD",
-                "COOKIE_SECURE",
-                "VITE_WHATSAPP_NUMBER",
+                "DATABASE_URL", "SESSION_SECRET", "ADMIN_USERNAME", "ADMIN_PASSWORD",
+                "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD",
+                "COOKIE_SECURE", "VITE_WHATSAPP_NUMBER",
             ]
 
-            def dotenv_quote(value):
+            def quote(value):
                 if "\n" in value or "\r" in value:
-                    raise SystemExit("ERRO: variaveis de ambiente nao podem conter quebras de linha.")
-                return "'" + value.replace("'", "\\'") + "'"
-
-            required = ["DATABASE_URL", "SESSION_SECRET", "ADMIN_USERNAME", "ADMIN_PASSWORD", "POSTGRES_PASSWORD"]
-            missing = [key for key in required if not os.environ.get(key)]
-            if missing:
-                raise SystemExit("ERRO: GitHub Secrets ausentes ou vazios: " + ", ".join(missing))
+                    raise SystemExit("ERRO: variavel de ambiente contem quebra de linha.")
+                return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
             Path(".env").write_text(
-                "".join(f"{key}={dotenv_quote(os.environ.get(key, ''))}\n" for key in keys),
+                "".join(f"{key}={quote(os.environ.get(key, ''))}\n" for key in keys),
                 encoding="utf-8",
             )
             os.chmod(".env", 0o600)
             PY
 
-            echo "==> Validando configuracao do Docker Compose"
+            echo "==> Validando Docker Compose"
             docker compose config --quiet
 
-            echo "==> Construindo e iniciando site, API e banco"
-            docker compose up -d --build
+            echo "==> Construindo e iniciando containers (padrao do deploy funcional)"
+            docker compose up -d --build --remove-orphans
 
-            echo "==> Estado dos containers"
+            echo "==> Containers"
             docker compose ps
 
-            echo "==> Verificando saude da API"
-            docker compose exec -T api node -e "fetch('http://127.0.0.1:3000/api/health').then(async r=>{console.log('API health HTTP '+r.status);process.exit(r.ok?0:1)}).catch(()=>process.exit(1))"
+            echo "==> Testando API"
+            docker compose exec -T api node -e "fetch('http://127.0.0.1:3000/api/health').then(async r=>{console.log('API health HTTP '+r.status);process.exit(r.ok?0:1)}).catch(e=>{console.error(e);process.exit(1)})"
 
-            echo "==> Deploy concluido para a branch $DEPLOY_BRANCH"
+            echo "==> Testando frontend Nginx"
+            docker compose exec -T lm-pudins-page wget -q -O /dev/null http://127.0.0.1/ || {
+              echo "ERRO: frontend nao respondeu dentro do container."
+              docker compose logs --tail=80 lm-pudins-page
+              exit 1
+            }
+
+            echo "==> Limpando imagens antigas sem uso"
+            docker image prune -f
+
+            echo "==> Deploy da branch $DEPLOY_BRANCH concluido."
