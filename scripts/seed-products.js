@@ -20,7 +20,7 @@ async function seedProducts() {
     const result = await pool.query(
       `INSERT INTO products
         (slug, name, short_description, description, ingredients, image, images, category, nutrition, active, sort_order)
-       VALUES ($1,$2,$3,$4,$5,$6,'[]'::jsonb,'$7','{}'::jsonb,TRUE,$8)
+       VALUES ($1,$2,$3,$4,$5,$6,'[]'::jsonb,$7,'{}'::jsonb,TRUE,$8)
        ON CONFLICT (slug) DO NOTHING
        RETURNING id`,
       [
