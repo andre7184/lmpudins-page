@@ -55,3 +55,71 @@
  .hero-photo{animation-duration:22s}
 }
 @media(prefers-reduced-motion:reduce){.hero-photo{animation:none}.product-real-image,.feature-real-image{transition:none}}
+
+
+/* Refinamento de leitura e acessibilidade em toda a landing page */
+:root { --body-copy: 16px; }
+body { font-size: 16px; }
+.nav { font-size: 12px; }
+.eyebrow { font-size: 10px; letter-spacing: .19em; }
+.hero-copy>p, .intro-description, .section-heading>p, .feature-copy>p,
+.contact-copy>p { font-size: 16px; line-height: 1.9; }
+.button { font-size: 12px; }
+.hero-proof { font-size: 12px; }
+.catalog-count { font-size: 10px; }
+.filter-button { font-size: 11px; }
+.product-info h3 { font-size: 28px; line-height: 1.2; }
+.product-info p { font-size: 14px; line-height: 1.8; }
+.product-info .eyebrow { font-size: 9px; }
+.text-link { font-size: 12px; }
+.feature-points strong { font-size: 14px; }
+.feature-points small { font-size: 12px; line-height: 1.6; }
+.contact-form label { font-size: 12px; }
+.contact-input-row input { font-size: 14px; }
+.contact-form>small { font-size: 11px; line-height: 1.7; }
+.footer-bottom { font-size: 10px; }
+.modal-backdrop { padding: clamp(12px, 3vw, 30px); }
+.product-modal { width: min(1040px, 100%); max-height: min(860px, 92dvh); grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
+.modal-art { min-height: 100%; }
+.modal-copy { padding: clamp(28px, 4vw, 52px); }
+.modal-copy h2 { font-size: clamp(38px, 4vw, 52px); line-height: 1.08; }
+.modal-copy>p { font-size: 15px; line-height: 1.85; color: #624b40; }
+.ingredient-block { margin: 20px 0; padding: 18px 0; }
+.ingredient-block span { font-size: 10px; letter-spacing: .16em; }
+.ingredient-block p { font-size: 14px; line-height: 1.8; color: #624b40; }
+.modal-controls { position: absolute; z-index: 8; top: 14px; right: 14px; display: flex; gap: 8px; }
+.modal-controls .modal-close { position: static; }
+.modal-open-page { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid rgba(216,182,107,.6); background: #260907; color: #f5dfad; transition: background .2s, transform .2s; }
+.modal-open-page:hover { background: #512018; transform: translateY(-1px); }
+.nutrition-serving { margin: 12px 0; font-size: 13px !important; font-weight: 600; color: #4b2d23 !important; }
+.nutrition-table-wrap { width: 100%; overflow-x: auto; }
+.nutrition-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; line-height: 1.45; font-variant-numeric: tabular-nums; }
+.nutrition-table th, .nutrition-table td { padding: 10px 8px; border-bottom: 1px solid #ddcdb7; vertical-align: top; }
+.nutrition-table thead th { background: #eadcc8; color: #5b3424; font-size: 11px; font-weight: 700; text-align: left; }
+.nutrition-table thead th:not(:first-child), .nutrition-table td { text-align: right; }
+.nutrition-table tbody th { text-align: left; font-weight: 600; color: #4b2d23; }
+.nutrition-table tbody td { color: #624b40; }
+.nutrition-note { margin-top: 12px !important; font-size: 12px !important; color: #735b4d !important; }
+.product-modal .button { font-size: 12px; }
+:where(a, button, input):focus-visible { outline: 2px solid #caa65b; outline-offset: 3px; }
+@media (max-width: 720px) {
+  .hero-copy>p, .intro-description, .section-heading>p, .feature-copy>p, .contact-copy>p { font-size: 15px; }
+  .product-info h3 { font-size: 22px; }
+  .product-info p { font-size: 12px; }
+  .product-modal { display: block; max-height: 92dvh; }
+  .modal-art { min-height: 0; height: clamp(180px, 32vh, 280px); }
+  .modal-copy { padding: 25px 22px 30px; }
+  .modal-copy h2 { font-size: 36px; padding-right: 38px; }
+  .modal-copy>p { font-size: 14px; }
+  .ingredient-block p { font-size: 13px; }
+  .nutrition-table { font-size: 12px; min-width: 280px; }
+  .nutrition-table th, .nutrition-table td { padding: 9px 6px; }
+  .modal-controls { top: 10px; right: 10px; gap: 6px; }
+  .modal-controls .modal-close, .modal-open-page { width: 36px; height: 36px; }
+  .footer-bottom { font-size: 9px; }
+}
+@media (max-width: 390px) {
+  .modal-copy { padding-inline: 17px; }
+  .modal-copy h2 { font-size: 32px; }
+  .nutrition-table { font-size: 11px; }
+}
