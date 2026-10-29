@@ -31,7 +31,16 @@ export default function ProductPage() {
   if (error || !product) return <main style={styles.page}><a style={styles.back} href="/#sabores">← Voltar aos sabores</a><h1>Produto não encontrado</h1><p>Este endereço pode estar incorreto ou o produto não está publicado.</p></main>;
 
   const nutrition = product.nutrition || {};
-  const nutrients = Array.isArray(nutrition.nutrientes) ? nutrition.nutrientes : [];
+  const nutrients = (() => {
+    if (Array.isArray(nutrition.nutrientes)) return nutrition.nutrientes;
+    if (typeof nutrition.nutrientes === 'string') {
+      try {
+        const parsed = JSON.parse(nutrition.nutrientes);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch { return []; }
+    }
+    return [];
+  })();
   return <main style={styles.page}>
     <header style={styles.header}>
       <a href="/" aria-label="LM Pudins"><img src="/images/Logo%20horizontal.png" alt="LM Pudins" style={styles.logo}/></a>
@@ -85,10 +94,10 @@ const styles = {
   description:{fontSize:15,lineHeight:1.8,color:'#d7c7c1'},
   section:{marginTop:28,paddingTop:22,borderTop:'1px solid #65434c'},
   warning:{marginTop:24,padding:18,border:'1px solid #8a6b50',borderRadius:12,background:'#211319'},
-  table:{width:'100%',borderCollapse:'collapse',fontSize:13,marginTop:12},
-  th:{textAlign:'left',padding:'10px 6px',borderBottom:'1px solid #76515b',color:'#e5c780',fontWeight:600},
-  rowHead:{textAlign:'left',fontWeight:500,padding:'10px 6px',borderBottom:'1px solid #65434c'},
-  cell:{textAlign:'right',padding:'10px 6px',borderBottom:'1px solid #65434c',whiteSpace:'nowrap'},
+  table:{width:'100%',borderCollapse:'collapse',fontSize:15,marginTop:12,lineHeight:1.55},
+  th:{textAlign:'left',padding:'12px 8px',borderBottom:'1px solid #76515b',color:'#e5c780',fontWeight:600},
+  rowHead:{textAlign:'left',fontWeight:600,padding:'12px 8px',borderBottom:'1px solid #65434c'},
+  cell:{textAlign:'right',padding:'12px 8px',borderBottom:'1px solid #65434c',whiteSpace:'nowrap'},
   serving:{color:'#d7c7c1',fontSize:13},
   note:{fontSize:12,lineHeight:1.6,color:'#cbb9b7',marginTop:12},
   cta:{display:'inline-flex',alignItems:'center',gap:10,marginTop:24,padding:'13px 18px',borderRadius:8,background:'linear-gradient(135deg,#f0d99d,#c99a49)',color:'#29171a',fontWeight:700,textDecoration:'none'},
