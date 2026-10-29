@@ -118,6 +118,9 @@ jobs:
             echo "==> Importando produtos do arquivo-fonte para o PostgreSQL"
             docker compose exec -T api node scripts/seed-products.js
 
+            echo "==> Confirmando catálogo pela API pública"
+            docker compose exec -T api node -e "fetch('http://127.0.0.1:3000/api/products').then(async r=>{if(!r.ok)throw new Error('API produtos HTTP '+r.status);const p=await r.json();console.log('API retornou '+p.length+' produto(s): '+p.map(x=>x.slug).join(', '));if(p.length<7)throw new Error('Esperados ao menos 7 produtos ativos, recebidos '+p.length);}).catch(e=>{console.error('FALHA NA VALIDACAO DO CATALOGO:',e);process.exit(1)})"
+
             echo "==> Testando frontend Nginx"
             docker compose exec -T lm-pudins-page wget -q -O /dev/null http://127.0.0.1/ || {
               echo "ERRO: frontend nao respondeu dentro do container."
