@@ -4,7 +4,7 @@ import { products as fallbackProducts } from './products.js';
 
 function Logo({ compact = false }) {
   return <a className={`brand ${compact ? 'brand-compact' : ''}`} href="#inicio" aria-label="LM Pudins — início">
-    <img className="brand-image" src="/images/Logo%20horizontal.png" alt="LM Pudins" />
+    <img className="brand-image" src="/images/Logo%20circular.png" alt="LM Pudins" />
   </a>;
 }
 
@@ -141,8 +141,8 @@ function App() {
       <div className="header-inner"><Logo />
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuOpen}>{menuOpen ? <X /> : <Menu />}</button>
         <nav className={menuOpen ? 'nav nav-open' : 'nav'} aria-label="Navegação principal">
-          <a href="#sabores" onClick={closeMenu}>Sabores</a><a href="#essencia" onClick={closeMenu}>Nossa essência</a><a href="#experiencia" onClick={closeMenu}>Experiência</a>
-          <a className="nav-cta" href="#pedidos" onClick={closeMenu}>Faça sua consulta <ArrowUpRight size={15} /></a>
+          <a href="#inicio" onClick={closeMenu}>Início</a><a href="#sabores" onClick={closeMenu}>Sabores</a><a href="#essencia" onClick={closeMenu}>Sobre nós</a><a href="#galeria" onClick={closeMenu}>Galeria</a><a href="#pedidos" onClick={closeMenu}>Pedidos</a><a href="#contato" onClick={closeMenu}>Contato</a>
+          <a className="nav-cta" href="#pedidos" onClick={closeMenu}>Comprar agora <ArrowUpRight size={15} /></a>
         </nav>
       </div>
     </header>
@@ -151,11 +151,11 @@ function App() {
       <section className="hero" id="inicio">
         <div className="hero-grain" />
         <div className="hero-copy">
-          <span className="eyebrow eyebrow-gold"><span className="eyebrow-line" /> UMA DOCE ASSINATURA</span>
-          <h1>Pequenos momentos.<br /><em>Grandes sabores.</em></h1>
-          <p>Uma experiência cremosa, feita para despertar os sentidos e transformar qualquer ocasião em algo especial.</p>
-          <div className="hero-actions"><a className="button button-gold" href="#sabores">Explore os sabores <ArrowRight size={17} /></a><a className="button button-quiet" href="#essencia">Conheça a LM <ArrowDown size={15} /></a></div>
-          <div className="hero-proof"><span className="proof-icon"><Sparkles size={16} /></span><span>Uma coleção de sabores<br /><strong>para se apaixonar</strong></span></div>
+          <span className="eyebrow eyebrow-gold"><span className="eyebrow-line" /> PUDINS ARTESANAIS</span>
+          <h1>Mais que uma sobremesa,<br /><em>é uma experiência!</em></h1>
+          <p>Na LM Pudins, cada sabor é cuidadosamente preparado para despertar o melhor dos seus momentos. Cremosos, irresistíveis e feitos com ingredientes selecionados.</p>
+          <div className="hero-actions"><a className="button button-gold" href="#sabores"><span aria-hidden="true">🛒</span> Conheça nossos sabores <ArrowRight size={17} /></a></div>
+          
         </div>
         <div className="hero-stage">
           <div className="orbit orbit-one" /><div className="orbit orbit-two" />
@@ -175,27 +175,36 @@ function App() {
       </section>
 
       <section className="catalog-section" id="sabores">
-        <div className="section-heading reveal"><div><span className="eyebrow eyebrow-gold">A COLEÇÃO LM</span><h2>Encontre seu <em>favorito.</em></h2></div><p>Sete personalidades, uma mesma paixão por sobremesas que ficam na memória.</p></div>
+        <div className="section-heading reveal"><div><span className="eyebrow eyebrow-gold">NOSSO CATÁLOGO</span><h2>7 Sabores Incríveis</h2></div><p>Sete personalidades, uma mesma paixão por sobremesas que ficam na memória.</p></div>
         <div className="catalog-toolbar"><span className="catalog-count" aria-live="polite">{String(visibleProducts.length).padStart(2, '0')} {visibleProducts.length === 1 ? 'SABOR DISPONÍVEL' : 'SABORES PARA DESCOBRIR'}</span><div className="filter-list" role="group" aria-label="Filtrar sabores">{filters.map((filter) => <button type="button" key={filter} aria-pressed={activeFilter === filter} className={activeFilter === filter ? 'filter-button filter-active' : 'filter-button'} onClick={() => setActiveFilter(filter)}>{filter}</button>)}</div></div>
         <div className="product-grid">{visibleProducts.map((product) => <ProductCard key={product.id} product={product} onOpen={setSelectedProduct} />)}</div>
       </section>
 
-      <section className="feature-section" id="experiencia">
+      <section className="feature-section" id="essencia">
         <div className="feature-art"><div className="feature-frame"><img className="feature-real-image" src="/images/campanha/detalhe-caramelo.jfif" alt="Detalhe da calda de caramelo sobre pudim" loading="lazy" /><span className="feature-vertical">UMA EXPERIÊNCIA SENSORIAL</span></div><span className="feature-number">01 <i>/ 03</i></span></div>
-        <div className="feature-copy reveal"><span className="eyebrow eyebrow-gold">A PRIMEIRA IMPRESSÃO</span><h2>O brilho do caramelo.<br /><em>A arte do sabor.</em></h2><p>Uma calda brilhante que escorre suavemente, uma textura delicada e cores que convidam o olhar antes mesmo da primeira colherada.</p><div className="feature-points"><div><span><Check size={15} /></span><p><strong>Texturas que encantam</strong><small>Um visual tão especial quanto a experiência.</small></p></div><div><span><Check size={15} /></span><p><strong>Sabores com personalidade</strong><small>Do clássico às combinações mais vibrantes.</small></p></div></div><a className="text-link text-link-light" href="#sabores">Explore a coleção <ArrowRight size={15} /></a></div>
+        <div className="feature-copy reveal"><span className="eyebrow eyebrow-gold">NOSSA ESSÊNCIA</span><h2>Tradição e Qualidade<br /><em>em Cada Receita</em></h2><p>A LM Pudins nasceu da paixão por doces e do desejo de transformar ingredientes simples em momentos extraordinários. Cada pudim é feito com carinho, seguindo receitas que valorizam o sabor, a textura e a qualidade.</p><div className="feature-points"><div><span><Check size={15} /></span><p><strong>Ingredientes</strong><small>selecionados</small></p></div><div><span><Check size={15} /></span><p><strong>Produção</strong><small>artesanal</small></p></div><div><span><Check size={15} /></span><p><strong>Sabor</strong><small>incomparável</small></p></div><div><span><Heart size={15} /></span><p><strong>Feito com</strong><small>muito carinho</small></p></div></div><a className="text-link text-link-light" href="#sabores">Explore a coleção <ArrowRight size={15} /></a></div>
       </section>
 
-      <section className="quote-section"><span className="quote-mark">“</span><p>Tem coisas que a gente prova.<br /><em>E tem coisas que a gente sente.</em></p><span className="quote-signature">LM PUDINS <i>✦</i></span></section>
+      <section className="gallery-section" id="galeria">
+        <div className="gallery-intro"><span className="eyebrow eyebrow-gold">GALERIA GASTRONÔMICA</span><h2>Beleza que<br /><em>se saboreia</em></h2><p>Cada pudim é uma obra de arte, feita para encantar seus olhos e conquistar seu paladar.</p><a className="button button-quiet" href="#sabores">Ver nossos sabores <ArrowRight size={16}/></a></div>
+        <div className="gallery-mosaic">
+          <button type="button" className="gallery-photo gallery-photo-main" onClick={() => setSelectedProduct(catalogProducts[0])}><img src="/images/pudins/frutas-vermelhas.jfif" alt="Pudim de frutas vermelhas" loading="lazy"/><span>Frutas Vermelhas</span></button>
+          <button type="button" className="gallery-photo" onClick={() => setSelectedProduct(catalogProducts[2])}><img src="/images/pudins/chocolate-cafe.jfif" alt="Pudim de chocolate com café" loading="lazy"/><span>Chocolate com Café</span></button>
+          <button type="button" className="gallery-photo" onClick={() => setSelectedProduct(catalogProducts[4])}><img src="/images/pudins/maracuja.jfif" alt="Pudim de maracujá" loading="lazy"/><span>Maracujá</span></button>
+          <button type="button" className="gallery-photo" onClick={() => setSelectedProduct(catalogProducts[1])}><img src="/images/pudins/laranja.jfif" alt="Pudim de laranja" loading="lazy"/><span>Laranja</span></button>
+          <button type="button" className="gallery-photo" onClick={() => setSelectedProduct(catalogProducts[6])}><img src="/images/pudins/romeu-julieta.jfif" alt="Pudim Romeu e Julieta" loading="lazy"/><span>Romeu e Julieta</span></button>
+        </div>
+      </section>
 
       <section className="contact-section" id="pedidos">
         <div className="contact-orb"><DessertVisual tone="classic" large /></div>
-        <div className="contact-copy reveal"><span className="eyebrow eyebrow-gold">SEU PRÓXIMO MOMENTO ESPECIAL</span><h2>Vamos adoçar<br /><em>seu dia?</em></h2><p>Conte pra gente como podemos fazer parte do seu momento. Consulte os sabores e a disponibilidade diretamente com a LM Pudins.</p>
-          <form className="contact-form" onSubmit={handleContact}><label htmlFor="contact-input">Seu WhatsApp ou e-mail</label><div className="contact-input-row"><input id="contact-input" value={contact} onChange={(e) => { setContact(e.target.value); setSubmitted(false); }} placeholder="Como podemos falar com você?" required /><button type="submit" aria-label="Enviar consulta"><ArrowRight /></button></div><small>Usaremos o contato apenas para encaminhar sua consulta. Configure o canal oficial antes da publicação.</small>{submitted && <p className="form-feedback" role="status">O formulário visual está pronto. Para receber consultas, configure VITE_WHATSAPP_NUMBER no ambiente de publicação.</p>}</form>
+        <div className="contact-copy reveal"><span className="eyebrow eyebrow-gold">PRONTO PARA ADOÇAR SEU DIA?</span><h2>Faça seu <em>pedido!</em></h2><p>Escolha seu sabor favorito e garanta essa experiência.</p>
+          <form className="contact-form" id="contato" onSubmit={handleContact}><label htmlFor="contact-input">Seu WhatsApp ou e-mail</label><div className="contact-input-row"><input id="contact-input" value={contact} onChange={(e) => { setContact(e.target.value); setSubmitted(false); }} placeholder="Como podemos falar com você?" required /><button type="submit" aria-label="Enviar consulta"><ArrowRight /></button></div><small>Usaremos o contato apenas para encaminhar sua consulta. Configure o canal oficial antes da publicação.</small>{submitted && <p className="form-feedback" role="status">O formulário visual está pronto. Para receber consultas, configure VITE_WHATSAPP_NUMBER no ambiente de publicação.</p>}</form>
         </div>
       </section>
     </main>
 
-    <footer className="site-footer"><div className="footer-top"><Logo compact /><p>Uma doce assinatura<br />para momentos especiais.</p><a className="footer-back" href="#inicio">Voltar ao topo ↑</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="#pedidos" aria-label="Contato"><MessageCircle size={16} /></a><a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram da LM Pudins"><Instagram size={16} /></a></span></div></footer>
+    <footer className="site-footer"><div className="footer-top"><Logo compact /><p>LM Pudins<br />A sobremesa perfeita para adoçar sua vida!</p><a className="footer-back" href="#inicio">Voltar ao topo ↑</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="#pedidos" aria-label="Contato"><MessageCircle size={16} /></a><a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram da LM Pudins"><Instagram size={16} /></a></span></div></footer>
     <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
   </>;
 }
