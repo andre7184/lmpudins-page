@@ -132,7 +132,7 @@ function App() {
   const handleContact = (event) => {
     event.preventDefault();
     const message = encodeURIComponent(`Olá! Conheci a LM Pudins pelo site e gostaria de saber mais sobre os sabores. Meu contato: ${contact}`);
-    const whatsapp = import.meta.env.VITE_WHATSAPP_NUMBER;
+    const whatsapp = import.meta.env.VITE_WHATSAPP_NUMBER || '5567991173161';
     if (whatsapp) window.open(`https://wa.me/${whatsapp}?text=${message}`, '_blank', 'noopener,noreferrer');
     else setSubmitted(true);
   };
@@ -204,7 +204,7 @@ function App() {
       </section>
     </main>
 
-    <footer className="site-footer"><div className="footer-top"><Logo compact /><p>LM Pudins<br />A sobremesa perfeita para adoçar sua vida!</p><a className="footer-back" href="#inicio">Voltar ao topo ↑</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="#pedidos" aria-label="Contato"><MessageCircle size={16} /></a><a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram da LM Pudins"><Instagram size={16} /></a></span></div></footer>
+    <footer className="site-footer"><div className="footer-top"><Logo compact /><p>LM Pudins<br />A sobremesa perfeita para adoçar sua vida!</p><a className="footer-back" href="#inicio">Voltar ao topo ↑</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="Fale com a LM Pudins pelo WhatsApp"><MessageCircle size={16} /></a><a href="https://www.instagram.com/lmpudinsgurmet/" target="_blank" rel="noopener noreferrer" aria-label="Instagram da LM Pudins"><Instagram size={16} /></a></span></div></footer>
     <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
   </>;
 }
