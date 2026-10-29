@@ -170,7 +170,8 @@ const styles = {
   arrowLeft:{left:16},arrowRight:{right:16},
   imageCounter:{position:'absolute',zIndex:2,right:22,top:18,fontSize:11,letterSpacing:'.16em',color:'#f5dfad',background:'#1c1014b8',padding:'8px 10px',pointerEvents:'none'},
   expandHint:{position:'absolute',right:20,top:20,display:'inline-flex',alignItems:'center',gap:7,padding:'9px 12px',background:'#1c1014c9',color:'#f5dfad',fontSize:12,letterSpacing:'.03em'},
-  captionBar:{position:'absolute',zIndex:2;},
+  captionBar:{position:'absolute',zIndex:2,left:0,right:0,bottom:0,display:'flex',alignItems:'center',gap:12,padding:'17px 24px',background:'linear-gradient(0deg,rgba(18,7,8,.96),rgba(18,7,8,.76))',borderTop:'1px solid #d7b36a55',pointerEvents:'none'},
+  captionMark:{color:'#e5c780',fontSize:16,flex:'none'},
   dots:{display:'flex',justifyContent:'center',gap:9,padding:'18px 0 0'},
   dot:{width:8,height:8,borderRadius:20,border:0,background:'#8e7375',cursor:'pointer',padding:0},
   dotActive:{width:25,background:'#e5c780'},
@@ -201,6 +202,3 @@ const styles = {
   lightboxImage:{maxWidth:'100%',maxHeight:'78vh',objectFit:'contain',display:'block'},
   lightboxCaption:{color:'#f4dfb2',fontSize:14,lineHeight:1.6,textAlign:'center',maxWidth:800}
 };
-
-styles.captionBar = {position:'absolute',zIndex:2,left:0,right:0,bottom:0,display:'flex',alignItems:'center',gap:12,padding:'17px 24px',background:'linear-gradient(0deg,rgba(18,7,8,.96),rgba(18,7,8,.76))',borderTop:'1px solid #d7b36a55',pointerEvents:'none'};
-styles.captionMark = {color:'#e5c780',fontSize:16,flex:'none'};
