@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, X, Instagram } from 'lucide-react';
 
-const INSTAGRAM_URL = 'https://www.instagram.com/';
+const INSTAGRAM_URL = 'https://www.instagram.com/lmpudinsgurmet/';
+const WHATSAPP_URL = 'https://wa.me/5567991173161';
 
 function getProductImages(product) {
   const source = product.images || product.gallery || product.gallery_images;
@@ -132,7 +133,7 @@ export default function ProductPage() {
         <p><strong>{nutrition.conservantes || 'Consulte as informações de conservação e validade na embalagem.'}</strong></p>
       </section>
       <div style={styles.bottomActions}>
-        <a href="/#pedidos" style={styles.cta}>Tenho interesse neste sabor <ArrowUpRight size={17}/></a>
+        <a href={`${WHATSAPP_URL}?text=${encodeURIComponent(`Olá! Tenho interesse no produto ${product.name}. Poderia me passar informações sobre disponibilidade e pedido?`)}`} target="_blank" rel="noopener noreferrer" style={styles.cta}>Pedir pelo WhatsApp <ArrowUpRight size={17}/></a>
         <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" style={styles.instagramLarge}><Instagram size={19}/> Acompanhe no Instagram <ArrowUpRight size={16}/></a>
       </div>
       <p style={styles.footerNote}>Para pedidos e disponibilidade, entre em contato com a LM Pudins.</p>
