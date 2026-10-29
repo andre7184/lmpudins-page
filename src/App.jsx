@@ -51,18 +51,41 @@ function ProductModal({ product, onClose }) {
     return () => { document.removeEventListener('keydown', closeOnEscape); document.body.style.overflow = ''; };
   }, [product, onClose]);
   if (!product) return null;
-  const nutritionEntries = Object.entries(product.nutrition || {}).filter(([key, value]) => key && value !== null && value !== '');
+  const nutrition = product.nutrition || {};
+  const parseNutrients = (value) => {
+    if (Array.isArray(value)) return value;
+    if (typeof value !== 'string' || !value.trim()) return [];
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+  const nutrients = parseNutrients(nutrition.nutrientes);
+  const otherNutrition = Object.entries(nutrition).filter(([key, value]) =>
+    !['nutrientes', 'porcao', 'nota_vd', 'alergenicos', 'conservantes'].includes(key) &&
+    value !== null && value !== '' && typeof value !== 'object'
+  );
+  const productUrl = `/produto/${product.slug || product.id}`;
   return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
     <section className="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <button className="modal-close" onClick={onClose} aria-label="Fechar detalhes"><X /></button>
+      <div className="modal-controls">
+        <a className="modal-open-page" href={productUrl} target="_blank" rel="noopener noreferrer" aria-label="Abrir ficha completa em outra página" title="Abrir em outra página"><ArrowUpRight size={20} /></a>
+        <button className="modal-close" onClick={onClose} aria-label="Fechar detalhes"><X /></button>
+      </div>
       <div className={`modal-art art-${product.tone}`}><img className="modal-real-image" src={product.image} alt={`Pudim de ${product.name}`} /></div>
       <div className="modal-copy">
         <span className="eyebrow">SABOR {product.number} · LM PUDINS</span>
         <h2 id="modal-title">{product.name}</h2>
         <p>{product.description}</p>
         <div className="ingredient-block"><span>INGREDIENTES DO CATÁLOGO</span><p>{product.ingredients}</p></div>
-        {nutritionEntries.length > 0 && <div className="ingredient-block"><span>INFORMAÇÃO NUTRICIONAL</span><table style={{width:"100%",borderCollapse:"collapse",marginTop:10,fontSize:13}}><tbody>{nutritionEntries.map(([key,value]) => <tr key={key} style={{borderBottom:"1px solid #8a6b5044"}}><th scope="row" style={{textAlign:"left",padding:"7px 8px 7px 0",fontWeight:500}}>{key.replaceAll("_"," ")}</th><td style={{textAlign:"right",padding:"7px 0 7px 8px"}}>{typeof value === "object" ? JSON.stringify(value) : String(value)}</td></tr>)}</tbody></table></div>}
-        <a className="text-link" href={`/produto/${product.slug || product.id}`} style={{display:"inline-flex",marginBottom:16}}>Ver ficha completa do produto <ArrowUpRight size={15} /></a>
+        {(nutrients.length > 0 || otherNutrition.length > 0) && <div className="ingredient-block nutrition-block"><span>INFORMAÇÃO NUTRICIONAL</span>
+          <p className="nutrition-serving">Porção: {nutrition.porcao || '140 g (1 unidade / pote)'}</p>
+          {nutrients.length > 0 ? <div className="nutrition-table-wrap"><table className="nutrition-table"><thead><tr><th>Quantidade por porção</th><th>Quantidade</th><th>%VD*</th></tr></thead><tbody>{nutrients.map((item, index) => <tr key={`${item[0] || 'nutriente'}-${index}`}><th scope="row">{item[0]}</th><td>{item[1] ?? '—'}</td><td>{item[2] ?? '—'}</td></tr>)}</tbody></table></div> : <table className="nutrition-table"><tbody>{otherNutrition.map(([key,value]) => <tr key={key}><th scope="row">{key.replaceAll('_',' ')}</th><td>{String(value)}</td></tr>)}</tbody></table>}
+          {nutrition.nota_vd && <p className="nutrition-note">{nutrition.nota_vd}</p>}
+        </div>}
+        {nutrition.alergenicos && <div className="ingredient-block"><span>ALÉRGICOS</span><p>{nutrition.alergenicos}</p>{nutrition.conservantes && <p>{nutrition.conservantes}</p>}</div>}
         <a className="button button-gold" href="#pedidos" onClick={onClose}>Tenho interesse <ArrowRight size={16} /></a>
         <small>Consulte disponibilidade e informações do produto diretamente com a marca.</small>
       </div>
