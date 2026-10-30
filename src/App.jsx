@@ -193,12 +193,13 @@ function App() {
       </section>
 
       <section className="gallery-section" id="galeria">
-        <div className="gallery-intro"><span className="eyebrow eyebrow-gold">GALERIA GASTRONÔMICA</span><h2>Beleza que<br /><em>se saboreia</em></h2><p>Conheça a LM Pudins por meio de nossos produtos, embalagens, loja e bastidores.</p><div className="gallery-counter">{galleryItems.length ? String(galleryIndex + 1).padStart(2,'0') : '00'} / {String(galleryItems.length).padStart(2,'0')}</div><a className="button button-quiet" href="#sabores">Ver nossos sabores <ArrowRight size={16}/></a></div>
+        <div className="gallery-heading"><span className="eyebrow eyebrow-gold">GALERIA GASTRONÔMICA</span></div>
         <div className="gallery-carousel" aria-live="polite">
           <button className="gallery-arrow" type="button" onClick={() => moveGallery(-1)} aria-label="Imagem anterior" disabled={galleryItems.length < 2}><ArrowLeft size={22}/></button>
           {visibleGalleryItem ? <button type="button" className="gallery-photo gallery-photo-main" key={visibleGalleryItem.key} onClick={() => visibleGalleryItem.product && setSelectedProduct(visibleGalleryItem.product)} aria-label={visibleGalleryItem.caption || 'Imagem da LM Pudins'}><img src={visibleGalleryItem.src} alt={visibleGalleryItem.caption || visibleGalleryItem.product.name} loading="lazy"/><span>{visibleGalleryItem.caption || visibleGalleryItem.product.name}</span></button> : <p className="gallery-empty">As imagens dos produtos aparecerão aqui quando o catálogo estiver disponível.</p>}
           <button className="gallery-arrow" type="button" onClick={() => moveGallery(1)} aria-label="Próxima imagem" disabled={galleryItems.length < 2}><ArrowRight size={22}/></button>
         </div>
+        <div className="gallery-intro"><h2>Beleza que<br /><em>se saboreia</em></h2><p>Conheça a LM Pudins por meio de nossos produtos, embalagens, loja e bastidores.</p><div className="gallery-counter">{galleryItems.length ? String(galleryIndex + 1).padStart(2,'0') : '00'} / {String(galleryItems.length).padStart(2,'0')}</div><a className="button button-quiet" href="#sabores">Ver nossos sabores <ArrowRight size={16}/></a></div>
       </section>
       <section className="about-section" id="quem-somos">
         <div className="about-mark"><img src="/images/Logo%20circular.png" alt="Logo da LM Pudins" loading="lazy"/></div>
