@@ -101,7 +101,8 @@ function App() {
   const [scrolled, setScrolled] = useState(false);
   const [contact, setContact] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [galleryIndex, setGalleryIndex] = useState(0);\n  const [independentGallery, setIndependentGallery] = useState([]);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [independentGallery, setIndependentGallery] = useState([]);
   const filters = ['Todos', 'Frutados', 'Intensos', 'Cremosos'];
   useEffect(() => {
     let cancelled = false;
