@@ -86,7 +86,7 @@ function ProductModal({ product, onClose }) {
           {nutrition.nota_vd && <p className="nutrition-note">{nutrition.nota_vd}</p>}
         </div>}
         {nutrition.alergenicos && <div className="ingredient-block"><span>ALÉRGICOS</span><p>{nutrition.alergenicos}</p>{nutrition.conservantes && <p>{nutrition.conservantes}</p>}</div>}
-        <a className="button button-gold" href="#pedidos" onClick={onClose}>Tenho interesse <ArrowRight size={16} /></a>
+        <a className="button button-gold" href="#contato" onClick={onClose}>Tenho interesse <ArrowRight size={16} /></a>
         <small>Consulte disponibilidade e informações do produto diretamente com a marca.</small>
       </div>
     </section>
@@ -99,9 +99,7 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [scrolled, setScrolled] = useState(false);
-  const [contact, setContact] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [galleryIndex, setGalleryIndex] = useState(0);
+    const [galleryIndex, setGalleryIndex] = useState(0);
   const [independentGallery, setIndependentGallery] = useState([]);
   const filters = ['Todos', 'Frutados', 'Intensos', 'Cremosos'];
   useEffect(() => {
@@ -145,19 +143,12 @@ function App() {
     return () => { window.removeEventListener('scroll', onScroll); observer.disconnect(); };
   }, [activeFilter]);
   const closeMenu = () => setMenuOpen(false);
-  const handleContact = (event) => {
-    event.preventDefault();
-    const message = encodeURIComponent(`Olá! Conheci a LM Pudins pelo site e gostaria de saber mais sobre os sabores. Meu contato: ${contact}`);
-    const whatsapp = import.meta.env.VITE_WHATSAPP_NUMBER || '5567991173161';
-    if (whatsapp) window.open(`https://wa.me/${whatsapp}?text=${message}`, '_blank', 'noopener,noreferrer');
-    else setSubmitted(true);
-  };
   return <>
     <header className={`site-header ${scrolled ? 'header-scrolled' : ''}`}>
       <div className="header-inner"><Logo />
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuOpen}>{menuOpen ? <X /> : <Menu />}</button>
         <nav className={menuOpen ? 'nav nav-open' : 'nav'} aria-label="Navegação principal">
-          <a href="#inicio" onClick={closeMenu}>Início</a><a href="#sabores" onClick={closeMenu}>Sabores</a><a href="#quem-somos" onClick={closeMenu}>Quem somos</a><a href="#galeria" onClick={closeMenu}>Galeria</a><a href="#pedidos" onClick={closeMenu}>Pedidos</a><a href="#contato" onClick={closeMenu}>Contato</a>
+          <a href="#inicio" onClick={closeMenu}>Início</a><a href="#sabores" onClick={closeMenu}>Sabores</a><a href="#quem-somos" onClick={closeMenu}>Quem somos</a><a href="#galeria" onClick={closeMenu}>Galeria</a><a href="#contato" onClick={closeMenu}>Contato</a>
           <a className="nav-cta" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>Peça pelo iFood <ArrowUpRight size={15} /></a>
         </nav>
       </div>
@@ -214,15 +205,22 @@ function App() {
         <div className="about-copy"><span className="eyebrow eyebrow-gold">QUEM SOMOS</span><h2>Uma paixão que virou<br/><em>doce propósito.</em></h2><p>A LM Pudins surgiu do carinho pela confeitaria e da vontade de transformar receitas em momentos especiais. Acreditamos que uma sobremesa pode reunir pessoas, celebrar conquistas e tornar simples encontros em lembranças gostosas.</p><p>Nossa ideia é unir sabor, cuidado artesanal e ingredientes selecionados em pudins feitos com atenção a cada detalhe — do preparo à apresentação — para levar um pouco mais de doçura ao dia de cada cliente.</p><a className="button button-quiet" href="#sabores">Conheça nossos sabores <ArrowRight size={16}/></a></div>
       </section>
 
-      <section className="contact-section" id="pedidos">
-        <div className="contact-orb"><DessertVisual tone="classic" large /></div>
-        <div className="contact-copy reveal"><span className="eyebrow eyebrow-gold">PRONTO PARA ADOÇAR SEU DIA?</span><h2>Faça seu <em>pedido!</em></h2><p>Escolha seu sabor favorito e garanta essa experiência.</p>
-          <form className="contact-form" id="contato" onSubmit={handleContact}><label htmlFor="contact-input">Seu WhatsApp ou e-mail</label><div className="contact-input-row"><input id="contact-input" value={contact} onChange={(e) => { setContact(e.target.value); setSubmitted(false); }} placeholder="Como podemos falar com você?" required /><button type="submit" aria-label="Enviar consulta"><ArrowRight /></button></div><small>Usaremos o contato apenas para encaminhar sua consulta. Configure o canal oficial antes da publicação.</small>{submitted && <p className="form-feedback" role="status">O formulário visual está pronto. Para receber consultas, configure VITE_WHATSAPP_NUMBER no ambiente de publicação.</p>}</form>
+      <section className="contact-section contact-page" id="contato">
+        <div className="contact-brand"><img src="/images/Logo%20vertical.png" alt="LM Pudins — logo vertical" /></div>
+        <div className="contact-copy reveal"><span className="eyebrow eyebrow-gold">FALE COM A LM PUDINS</span><h2>Vamos adoçar<br/><em>seu dia?</em></h2><p>Acompanhe nossas novidades, conheça os bastidores e fale com a gente pelo seu canal preferido.</p>
+          <div className="contact-social-grid">
+            <a href="https://www.instagram.com/lmpudinsgourmet/" target="_blank" rel="noopener noreferrer"><Instagram/><span><strong>Instagram</strong><small>@lmpudinsgourmet</small></span><ArrowUpRight/></a>
+            <a href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer"><MessageCircle/><span><strong>WhatsApp</strong><small>Fale diretamente conosco</small></span><ArrowUpRight/></a>
+            <a href="mailto:lmpudins@gmail.com"><span className="contact-social-letter">✉</span><span><strong>E-mail</strong><small>lmpudins@gmail.com</small></span><ArrowUpRight/></a>
+            <a href="https://www.youtube.com/@LMPudins" target="_blank" rel="noopener noreferrer"><span className="contact-social-letter">▶</span><span><strong>YouTube</strong><small>@LMPudins</small></span><ArrowUpRight/></a>
+            <a href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer"><span className="contact-social-letter">i</span><span><strong>iFood</strong><small>Peça nossos pudins</small></span><ArrowUpRight/></a>
+          </div>
         </div>
       </section>
     </main>
 
-    <footer className="site-footer"><div className="footer-top"><Logo compact /><p>LM Pudins<br />A sobremesa perfeita para adoçar sua vida!</p><a className="footer-back" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer">Peça pelo iFood ↗</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="Fale com a LM Pudins pelo WhatsApp"><MessageCircle size={16} /></a><a href="https://www.instagram.com/lmpudinsgourmet/" target="_blank" rel="noopener noreferrer" aria-label="Instagram da LM Pudins"><Instagram size={16} /></a></span></div></footer>
+    <footer className="site-footer"><div className="footer-top"><Logo compact /><p>LM Pudins<br />A sobremesa perfeita para adoçar sua vida!</p><a className="footer-back" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer">Peça pelo iFood ↗</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><MessageCircle size={16}/></a><a href="https://www.instagram.com/lmpudinsgourmet/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={16}/></a><a href="https://www.youtube.com/@LMPudins" target="_blank" rel="noopener noreferrer" aria-label="YouTube">▶</a><a href="mailto:lmpudins@gmail.com" aria-label="E-mail">✉</a></span></div></footer>
+    <a className="whatsapp-float" href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="Fale com a LM Pudins pelo WhatsApp"><MessageCircle size={27}/><span>Fale conosco</span></a>
     <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
   </>;
 }
