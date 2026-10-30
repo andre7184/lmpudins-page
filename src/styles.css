@@ -558,3 +558,50 @@ body { background:#200604; }
   .gallery-section .gallery-intro p { margin-left:auto; margin-right:auto; font-size:13px; }
   .gallery-section .gallery-counter { margin:12px 0; }
 }
+
+
+/* Correção de empilhamento e respiro da galeria após a seção Nossa essência. */
+.gallery-section {
+  position: relative;
+  isolation: isolate;
+  clear: both;
+  z-index: 1;
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 76px clamp(22px, 6.2vw, 90px) 58px;
+  overflow: visible;
+}
+.gallery-heading {
+  position: relative;
+  z-index: 2;
+  display: block;
+  grid-area: heading;
+  width: 100%;
+  margin: 0 0 18px;
+  padding: 0 0 12px;
+  text-align: center;
+}
+.gallery-heading h2 {
+  margin: 0;
+  color: #f1d38a;
+  font: 500 clamp(25px, 3vw, 38px)/1.2 var(--serif);
+  letter-spacing: .025em;
+}
+.gallery-section .gallery-carousel {
+  position: relative;
+  z-index: 1;
+  align-self: start;
+  min-height: 0;
+}
+.gallery-section .gallery-intro { align-self: center; }
+@media (max-width: 640px) {
+  .gallery-section {
+    padding: 54px 18px 40px;
+    grid-template-areas: "heading" "carousel" "intro";
+    row-gap: 20px;
+  }
+  .gallery-heading { margin-bottom: 2px; padding-bottom: 4px; }
+  .gallery-heading h2 { font-size: 27px; }
+  .gallery-section .gallery-carousel { margin-top: 0; }
+}
