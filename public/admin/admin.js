@@ -13,7 +13,7 @@ function openModal(title){$('modal-title').textContent=title;$('product-modal').
 function closeModal(){$('product-modal').classList.add('hidden');document.body.style.overflow=''}
 function renderGallery(){
   const list=$('gallery-list');list.replaceChildren();
-  if(!galleryImages.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Nenhuma imagem adicional cadastrada.';list.appendChild(empty);return}
+  if(!galleryImages.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Nenhuma imagem cadastrada.';list.appendChild(empty);return}
   galleryImages.forEach((item,index)=>{
     const row=document.createElement('div');row.className='gallery-item';
     const img=document.createElement('img');img.src=item.url||item.src||item.image||item.path;img.alt=item.description||'Imagem do produto';
@@ -29,7 +29,7 @@ function clearForm(){
   selectedId=null;galleryImages=[];$('product-form').reset();$('product-id').value='';$('sort-order').value='0';$('active').checked=true;$('nutrition').value='{}';$('delete-product').classList.add('hidden');status('form-status','');status('gallery-upload-status','');renderGallery();renderList();openModal('Novo produto');
 }
 function fillForm(p){
-  selectedId=p.id;galleryImages=Array.isArray(p.images)?p.images.map(x=>({...x})):[];if(p.image&&!galleryImages.some(x=>(x.url||x.src||x.image||x.path)===p.image))galleryImages.unshift({url:p.image,description:p.image_description||''});else if(p.image){const i=galleryImages.findIndex(x=>(x.url||x.src||x.image||x.path)===p.image);if(i>0)galleryImages.unshift(galleryImages.splice(i,1)[0]);} $('product-id').value=p.id;$('slug').value=p.slug;$('name').value=p.name;$('category').value=p.category||'Cremosos';$('sort-order').value=p.sort_order||0;$('short-description').value=p.short_description||'';$('description').value=p.description||'';$('ingredients').value=p.ingredients||'';$('image').value=p.image||'';$('nutrition').value=JSON.stringify(p.nutrition||{},null,2);$('active').checked=!!p.active;$('delete-product').classList.remove('hidden');$('image-file').value='';$('gallery-description').value='';status('form-status','');status('gallery-upload-status','');renderGallery();renderList();openModal('Editar produto');
+  selectedId=p.id;galleryImages=Array.isArray(p.images)?p.images.map(x=>({...x})):[];if(p.image&&!galleryImages.some(x=>(x.url||x.src||x.image||x.path)===p.image))galleryImages.unshift({url:p.image,description:p.image_description||''});else if(p.image){const i=galleryImages.findIndex(x=>(x.url||x.src||x.image||x.path)===p.image);if(i>0)galleryImages.unshift(galleryImages.splice(i,1)[0]);} $('product-id').value=p.id;$('slug').value=p.slug;$('name').value=p.name;$('category').value=p.category||'Cremosos';$('sort-order').value=p.sort_order||0;$('short-description').value=p.short_description||'';$('description').value=p.description||'';$('ingredients').value=p.ingredients||'';$('image').value=p.image||'';$('nutrition').value=JSON.stringify(p.nutrition||{},null,2);$('active').checked=!!p.active;$('delete-product').classList.remove('hidden');$('gallery-file').value='';$('gallery-description').value='';status('form-status','');status('gallery-upload-status','');renderGallery();renderList();openModal('Editar produto');
 }
 function renderList(){
   const list=$('product-list');list.replaceChildren();
