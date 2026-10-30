@@ -101,7 +101,7 @@ function App() {
   const [scrolled, setScrolled] = useState(false);
   const [contact, setContact] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [galleryIndex, setGalleryIndex] = useState(0);\n  const [independentGallery, setIndependentGallery] = useState([]);
   const filters = ['Todos', 'Frutados', 'Intensos', 'Cremosos'];
   useEffect(() => {
     let cancelled = false;
@@ -114,7 +114,7 @@ function App() {
     }).catch(() => {}).finally(() => {});
     return () => { cancelled = true; };
   }, []);
-  const galleryItems = catalogProducts.flatMap((product) => {
+  useEffect(() => { fetch('/api/gallery').then(r=>r.ok?r.json():[]).then(items=>setIndependentGallery(Array.isArray(items)?items:[])).catch(()=>{}); }, []);\n  const galleryItems = [...independentGallery.map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins',product:null,key:'library-'+item.id})), ...catalogProducts.flatMap((product) => {
     const extraImages = Array.isArray(product.images) ? product.images : Array.isArray(product.gallery) ? product.gallery : [];
     const normalized = extraImages.map((item) => typeof item === 'string' ? { src: item, caption: '' } : {
       src: item?.url || item?.src || item?.image || item?.path || '',
@@ -200,10 +200,10 @@ function App() {
       </section>
 
       <section className="gallery-section" id="galeria">
-        <div className="gallery-intro"><span className="eyebrow eyebrow-gold">GALERIA GASTRONÔMICA</span><h2>Beleza que<br /><em>se saboreia</em></h2><p>Conheça nossos sabores em imagens. A galeria reúne automaticamente as fotos cadastradas nos produtos.</p><div className="gallery-counter">{galleryItems.length ? String(galleryIndex + 1).padStart(2,'0') : '00'} / {String(galleryItems.length).padStart(2,'0')}</div><a className="button button-quiet" href="#sabores">Ver nossos sabores <ArrowRight size={16}/></a></div>
+        <div className="gallery-intro"><span className="eyebrow eyebrow-gold">GALERIA GASTRONÔMICA</span><h2>Beleza que<br /><em>se saboreia</em></h2><p>Conheça a LM Pudins por meio de nossos produtos, embalagens, loja e bastidores.</p><div className="gallery-counter">{galleryItems.length ? String(galleryIndex + 1).padStart(2,'0') : '00'} / {String(galleryItems.length).padStart(2,'0')}</div><a className="button button-quiet" href="#sabores">Ver nossos sabores <ArrowRight size={16}/></a></div>
         <div className="gallery-carousel" aria-live="polite">
           <button className="gallery-arrow" type="button" onClick={() => moveGallery(-1)} aria-label="Imagem anterior" disabled={galleryItems.length < 2}><ArrowLeft size={22}/></button>
-          {visibleGalleryItem ? <button type="button" className="gallery-photo gallery-photo-main" key={visibleGalleryItem.key} onClick={() => setSelectedProduct(visibleGalleryItem.product)} aria-label={`Ver produto ${visibleGalleryItem.product.name}: ${visibleGalleryItem.caption || 'imagem'}`}><img src={visibleGalleryItem.src} alt={visibleGalleryItem.caption || visibleGalleryItem.product.name} loading="lazy"/><span>{visibleGalleryItem.caption || visibleGalleryItem.product.name}</span></button> : <p className="gallery-empty">As imagens dos produtos aparecerão aqui quando o catálogo estiver disponível.</p>}
+          {visibleGalleryItem ? <button type="button" className="gallery-photo gallery-photo-main" key={visibleGalleryItem.key} onClick={() => visibleGalleryItem.product && setSelectedProduct(visibleGalleryItem.product)} aria-label={visibleGalleryItem.caption || 'Imagem da LM Pudins'}><img src={visibleGalleryItem.src} alt={visibleGalleryItem.caption || visibleGalleryItem.product.name} loading="lazy"/><span>{visibleGalleryItem.caption || visibleGalleryItem.product.name}</span></button> : <p className="gallery-empty">As imagens dos produtos aparecerão aqui quando o catálogo estiver disponível.</p>}
           <button className="gallery-arrow" type="button" onClick={() => moveGallery(1)} aria-label="Próxima imagem" disabled={galleryItems.length < 2}><ArrowRight size={22}/></button>
         </div>
       </section>
