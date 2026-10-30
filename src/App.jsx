@@ -115,7 +115,8 @@ function App() {
     }).catch(() => {}).finally(() => {});
     return () => { cancelled = true; };
   }, []);
-  useEffect(() => { fetch('/api/gallery').then(r=>r.ok?r.json():[]).then(items=>setIndependentGallery(Array.isArray(items)?items:[])).catch(()=>{}); }, []);\n  const galleryItems = [...independentGallery.map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins',product:null,key:'library-'+item.id})), ...catalogProducts.flatMap((product) => {
+  useEffect(() => { fetch('/api/gallery').then(r=>r.ok?r.json():[]).then(items=>setIndependentGallery(Array.isArray(items)?items:[])).catch(()=>{}); }, []);
+  const galleryItems = [...independentGallery.map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins',product:null,key:'library-'+item.id})), ...catalogProducts.flatMap((product) => {
     const extraImages = Array.isArray(product.images) ? product.images : Array.isArray(product.gallery) ? product.gallery : [];
     const normalized = extraImages.map((item) => typeof item === 'string' ? { src: item, caption: '' } : {
       src: item?.url || item?.src || item?.image || item?.path || '',
