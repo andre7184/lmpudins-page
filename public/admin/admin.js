@@ -22,14 +22,14 @@ function renderGallery(){
     const path=document.createElement('small');path.textContent=item.url||item.src||item.image||item.path;
     details.append(desc,path);
     const remove=document.createElement('button');remove.type='button';remove.className='btn danger';remove.textContent='Remover';remove.addEventListener('click',()=>{galleryImages.splice(index,1);renderGallery()});
-    row.append(img,details,remove);list.appendChild(row);
+    if(index===0){const main=document.createElement('small');main.className='main-image-label';main.textContent='IMAGEM PRINCIPAL';details.prepend(main)}row.append(img,details,remove);list.appendChild(row);
   });
 }
 function clearForm(){
   selectedId=null;galleryImages=[];$('product-form').reset();$('product-id').value='';$('sort-order').value='0';$('active').checked=true;$('nutrition').value='{}';$('delete-product').classList.add('hidden');status('form-status','');status('gallery-upload-status','');renderGallery();renderList();openModal('Novo produto');
 }
 function fillForm(p){
-  selectedId=p.id;galleryImages=Array.isArray(p.images)?p.images.map(x=>({...x})):[];$('product-id').value=p.id;$('slug').value=p.slug;$('name').value=p.name;$('category').value=p.category||'Cremosos';$('sort-order').value=p.sort_order||0;$('short-description').value=p.short_description||'';$('description').value=p.description||'';$('ingredients').value=p.ingredients||'';$('image').value=p.image||'';$('nutrition').value=JSON.stringify(p.nutrition||{},null,2);$('active').checked=!!p.active;$('delete-product').classList.remove('hidden');$('image-file').value='';$('gallery-description').value='';status('form-status','');status('gallery-upload-status','');renderGallery();renderList();openModal('Editar produto');
+  selectedId=p.id;galleryImages=Array.isArray(p.images)?p.images.map(x=>({...x})):[];if(p.image&&!galleryImages.some(x=>(x.url||x.src||x.image||x.path)===p.image))galleryImages.unshift({url:p.image,description:p.image_description||''});else if(p.image){const i=galleryImages.findIndex(x=>(x.url||x.src||x.image||x.path)===p.image);if(i>0)galleryImages.unshift(galleryImages.splice(i,1)[0]);} $('product-id').value=p.id;$('slug').value=p.slug;$('name').value=p.name;$('category').value=p.category||'Cremosos';$('sort-order').value=p.sort_order||0;$('short-description').value=p.short_description||'';$('description').value=p.description||'';$('ingredients').value=p.ingredients||'';$('image').value=p.image||'';$('nutrition').value=JSON.stringify(p.nutrition||{},null,2);$('active').checked=!!p.active;$('delete-product').classList.remove('hidden');$('image-file').value='';$('gallery-description').value='';status('form-status','');status('gallery-upload-status','');renderGallery();renderList();openModal('Editar produto');
 }
 function renderList(){
   const list=$('product-list');list.replaceChildren();
@@ -48,18 +48,16 @@ $('new-product').addEventListener('click',clearForm);$('close-modal').addEventLi
 $('product-form').addEventListener('submit',async e=>{
   e.preventDefault();status('form-status','Salvando…');let nutrition;
   try{nutrition=JSON.parse($('nutrition').value||'{}');if(!nutrition||Array.isArray(nutrition)||typeof nutrition!=='object')throw new Error()}catch{status('form-status','A informação nutricional precisa ser um objeto JSON válido.');return}
-  const p={slug:$('slug').value.trim(),name:$('name').value.trim(),category:$('category').value,sort_order:Number($('sort-order').value)||0,short_description:$('short-description').value,description:$('description').value,ingredients:$('ingredients').value,image:$('image').value.trim(),images:galleryImages,nutrition,active:$('active').checked};
+  const p={slug:$('slug').value.trim(),name:$('name').value.trim(),category:$('category').value,sort_order:Number($('sort-order').value)||0,short_description:$('short-description').value,description:$('description').value,ingredients:$('ingredients').value,image:(galleryImages[0]?.url||galleryImages[0]?.src||galleryImages[0]?.image||galleryImages[0]?.path||''),image_description:galleryImages[0]?.description||'',images:galleryImages,nutrition,active:$('active').checked};
   try{if(selectedId)await api('/api/admin/products/'+selectedId,{method:'PUT',body:JSON.stringify(p)});else await api('/api/admin/products',{method:'POST',body:JSON.stringify(p)});await loadProducts();closeModal();status('products-status','Produto salvo com sucesso.')}catch(err){status('form-status',err.message)}
 });
 $('delete-product').addEventListener('click',async()=>{if(!selectedId||!confirm('Excluir este produto do catálogo?'))return;try{await api('/api/admin/products/'+selectedId,{method:'DELETE'});await loadProducts();closeModal();status('products-status','Produto excluído.')}catch(err){status('form-status',err.message)}});
 async function uploadImage({asGallery}){
-  const file=$('image-file').files?.[0];if(!file){status('gallery-upload-status','Selecione uma imagem antes de enviar.');return}
+  const file=$('gallery-file').files?.[0];if(!file){status('gallery-upload-status','Selecione uma imagem antes de enviar.');return}
   const body=new FormData();body.append('image',file);status('gallery-upload-status','Enviando imagem…');
   try{const response=await fetch('/api/admin/uploads',{method:'POST',credentials:'same-origin',body});const data=await response.json().catch(()=>({error:'Resposta inválida do servidor.'}));if(!response.ok)throw new Error(data.error||'Falha no envio.');
-    if(asGallery){galleryImages.push({url:data.url,description:$('gallery-description').value.trim()});renderGallery();$('gallery-description').value='';$('image-file').value='';status('gallery-upload-status','Imagem adicionada à lista. Clique em “Salvar produto” para gravar no cadastro.')}
-    else{$('image').value=data.url;status('upload-status','Imagem principal enviada. Salve o produto para gravar o caminho.')}
+    galleryImages.push({url:data.url,description:$('gallery-description').value.trim()});if(galleryImages.length===1)$('image').value=data.url;renderGallery();$('gallery-description').value='';$('gallery-file').value='';status('gallery-upload-status','Imagem adicionada à lista. A primeira imagem é a principal. Clique em “Salvar produto” para gravar o cadastro.')
   }catch(err){status('gallery-upload-status',err.message)}
 }
-$('upload-image').addEventListener('click',()=>uploadImage({asGallery:false}));
 $('upload-gallery-image').addEventListener('click',()=>uploadImage({asGallery:true}));
 checkSession();
