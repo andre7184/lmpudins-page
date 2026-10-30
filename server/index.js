@@ -523,6 +523,11 @@ async function initDb() {
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS images JSONB NOT NULL DEFAULT '[]'::jsonb`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS media_library (
+    id BIGSERIAL PRIMARY KEY, url TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
+    category TEXT NOT NULL DEFAULT 'Institucional', active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`);
   await pool.query(`CREATE TABLE IF NOT EXISTS admin_users (
     id BIGSERIAL PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -584,6 +589,10 @@ app.post('/api/auth/login', rateLimit({windowMs:15*60*1000, limit:10, standardHe
 });
 app.get('/api/auth/me', (req,res) => req.session?.adminId ? res.json({user:{username:req.session.username}}) : res.status(401).json({error:'Não autenticado.'}));
 app.post('/api/auth/logout', (req,res) => req.session.destroy(() => {res.clearCookie('lm_admin_session');res.status(204).end();}));
+app.get('/api/gallery', async (_req,res) => { const result=await pool.query('SELECT id,url,description,category FROM media_library WHERE active=TRUE ORDER BY id DESC'); res.json(result.rows); });
+app.get('/api/admin/gallery', isAdmin, async (_req,res) => { const result=await pool.query('SELECT * FROM media_library ORDER BY id DESC'); res.json(result.rows); });
+app.post('/api/admin/gallery', isAdmin, async (req,res) => { const {url,description,category}=req.body||{}; if(!url) return res.status(400).json({error:'Envie uma imagem antes de salvar.'}); const result=await pool.query('INSERT INTO media_library(url,description,category) VALUES($1,$2,$3) RETURNING *',[url,String(description||''),String(category||'Institucional')]); res.status(201).json(result.rows[0]); });
+app.delete('/api/admin/gallery/:id', isAdmin, async (req,res) => { const result=await pool.query('DELETE FROM media_library WHERE id=$1 RETURNING id',[req.params.id]); if(!result.rowCount)return res.status(404).json({error:'Imagem não encontrada.'}); res.status(204).end(); });
 app.get('/api/products', async (_req,res) => {
   const result = await pool.query('SELECT * FROM products WHERE active=TRUE ORDER BY sort_order, id');
   res.json(result.rows.map(publicProduct));
