@@ -124,7 +124,7 @@ function App() {
       normalized.unshift({ src: product.image, caption: product.name });
     }
     return normalized.map((item, index) => ({ ...item, product, key: `${product.slug || product.id}-${item.src}-${index}` }));
-  });
+  })];
   const moveGallery = (step) => setGalleryIndex((current) => galleryItems.length ? (current + step + galleryItems.length) % galleryItems.length : 0);
   const visibleGalleryItem = galleryItems.length ? galleryItems[galleryIndex % galleryItems.length] : null;
   const visibleProducts = catalogProducts.filter((p) => {
