@@ -193,7 +193,7 @@ function App() {
       </section>
 
       <section className="gallery-section" id="galeria">
-        <div className="gallery-heading"><h2>Galeria gastronômica</h2></div>
+        <div className="gallery-heading section-heading"><div><span className="eyebrow eyebrow-gold">NOSSA GALERIA</span><h2>Galeria gastronômica</h2></div></div>
         <div className="gallery-carousel" aria-live="polite">
           <button className="gallery-arrow" type="button" onClick={() => moveGallery(-1)} aria-label="Imagem anterior" disabled={galleryItems.length < 2}><ArrowLeft size={22}/></button>
           {visibleGalleryItem ? <button type="button" className="gallery-photo gallery-photo-main" key={visibleGalleryItem.key} onClick={() => visibleGalleryItem.product && setSelectedProduct(visibleGalleryItem.product)} aria-label={visibleGalleryItem.caption || 'Imagem da LM Pudins'}><img src={visibleGalleryItem.src} alt={visibleGalleryItem.caption || visibleGalleryItem.product.name} loading="lazy"/><span>{visibleGalleryItem.caption || visibleGalleryItem.product.name}</span></button> : <p className="gallery-empty">As imagens dos produtos aparecerão aqui quando o catálogo estiver disponível.</p>}
