@@ -689,3 +689,93 @@ body { background:#200604; }
   .gallery-section .gallery-intro { text-align: center; padding: 0 8px; }
   .gallery-section .gallery-intro p { margin-left: auto; margin-right: auto; }
 }
+
+
+/* Ajuste definitivo: hierarquia dos títulos à esquerda e galeria em áreas independentes. */
+.section-heading,
+.section-heading > div,
+.catalog-section .section-heading,
+.feature-copy,
+.gallery-section .gallery-heading,
+.gallery-section .gallery-heading > div,
+.gallery-section .gallery-intro {
+  text-align: left !important;
+}
+.gallery-section {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.15fr) minmax(260px, .85fr) !important;
+  grid-template-rows: auto auto !important;
+  grid-template-areas: "heading heading" "carousel intro" !important;
+  align-items: center !important;
+  justify-items: stretch !important;
+  row-gap: clamp(28px, 4vw, 48px) !important;
+  column-gap: clamp(28px, 5vw, 72px) !important;
+  overflow: visible !important;
+}
+.gallery-section .gallery-heading {
+  grid-area: heading !important;
+  display: block !important;
+  position: static !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+}
+.gallery-section .gallery-heading > div {
+  width: 100% !important;
+  text-align: left !important;
+}
+.gallery-section .gallery-heading .eyebrow {
+  display: block !important;
+  margin: 0 0 12px !important;
+  font-size: 10px !important;
+  letter-spacing: .22em !important;
+}
+.gallery-section .gallery-heading h2 {
+  margin: 0 !important;
+  text-align: left !important;
+  font: 400 clamp(35px, 4vw, 54px)/1.12 var(--serif) !important;
+  letter-spacing: -.035em !important;
+}
+.gallery-section .gallery-carousel {
+  grid-area: carousel !important;
+  position: relative !important;
+  inset: auto !important;
+  align-self: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+.gallery-section .gallery-intro {
+  grid-area: intro !important;
+  position: relative !important;
+  inset: auto !important;
+  align-self: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+}
+.gallery-section .gallery-intro h2,
+.gallery-section .gallery-intro p {
+  text-align: left !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+@media (max-width: 640px) {
+  .gallery-section {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto auto !important;
+    grid-template-areas: "heading" "carousel" "intro" !important;
+    row-gap: 24px !important;
+  }
+  .gallery-section .gallery-heading,
+  .gallery-section .gallery-heading > div,
+  .gallery-section .gallery-intro {
+    text-align: left !important;
+  }
+  .gallery-section .gallery-heading h2 {
+    font-size: clamp(32px, 8vw, 40px) !important;
+  }
+}
