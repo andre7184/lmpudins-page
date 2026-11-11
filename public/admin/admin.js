@@ -26,11 +26,38 @@ function renderGallery(){
   });
 }
 function clearForm(){
-  selectedId=null;galleryImages=[];$('product-form').reset();$('product-id').value='';$('sort-order').value='0';$('active').checked=true;$('nutrition').value='{}';$('delete-product').classList.add('hidden');status('form-status','');status('gallery-upload-status','');renderGallery();renderList();openModal('Novo produto');
+  selectedId=null;galleryImages=[];$('product-form').reset();$('product-id').value='';$('sort-order').value='0';$('active').checked=true;$('nutrition').value='{}';$('delete-product').classList.add('hidden');status('form-status','');status('gallery-upload-status','');$('product-qrcode-panel').classList.add('hidden');renderGallery();renderList();openModal('Novo produto');
 }
 function fillForm(p){
-  selectedId=p.id;galleryImages=Array.isArray(p.images)?p.images.map(x=>({...x})):[];if(p.image&&!galleryImages.some(x=>(x.url||x.src||x.image||x.path)===p.image))galleryImages.unshift({url:p.image,description:p.image_description||''});else if(p.image){const i=galleryImages.findIndex(x=>(x.url||x.src||x.image||x.path)===p.image);if(i>0)galleryImages.unshift(galleryImages.splice(i,1)[0]);} $('product-id').value=p.id;$('slug').value=p.slug;$('name').value=p.name;$('category').value=p.category||'Cremosos';$('sort-order').value=p.sort_order||0;$('short-description').value=p.short_description||'';$('description').value=p.description||'';$('ingredients').value=p.ingredients||'';$('image').value=p.image||'';$('nutrition').value=JSON.stringify(p.nutrition||{},null,2);$('active').checked=!!p.active;$('delete-product').classList.remove('hidden');$('gallery-file').value='';$('gallery-description').value='';status('form-status','');status('gallery-upload-status','');renderGallery();renderList();openModal('Editar produto');
+  selectedId=p.id;galleryImages=Array.isArray(p.images)?p.images.map(x=>({...x})):[];if(p.image&&!galleryImages.some(x=>(x.url||x.src||x.image||x.path)===p.image))galleryImages.unshift({url:p.image,description:p.image_description||''});else if(p.image){const i=galleryImages.findIndex(x=>(x.url||x.src||x.image||x.path)===p.image);if(i>0)galleryImages.unshift(galleryImages.splice(i,1)[0]);} $('product-id').value=p.id;$('slug').value=p.slug;$('name').value=p.name;$('category').value=p.category||'Cremosos';$('sort-order').value=p.sort_order||0;$('short-description').value=p.short_description||'';$('description').value=p.description||'';$('ingredients').value=p.ingredients||'';$('image').value=p.image||'';$('nutrition').value=JSON.stringify(p.nutrition||{},null,2);$('active').checked=!!p.active;$('delete-product').classList.remove('hidden');$('gallery-file').value='';$('gallery-description').value='';status('form-status','');status('gallery-upload-status','');$('product-qrcode-panel').classList.remove('hidden');renderProductQr();renderGallery();renderList();openModal('Editar produto');
 }
+
+function productPageUrl(){
+  const slug=$('slug').value.trim();
+  return slug ? new URL('/produto/'+encodeURIComponent(slug),window.location.origin).href : '';
+}
+function renderProductQr(){
+  const url=productPageUrl(), target=$('product-qrcode');
+  $('product-page-url').textContent=url||'Informe o identificador do produto para gerar o QR Code.';
+  target.replaceChildren();
+  $('download-product-qr').disabled=!url;
+  $('copy-product-url').disabled=!url;
+  if(!url || !window.QRCode)return;
+  new QRCode(target,{text:url,width:190,height:190,colorDark:'#241319',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+}
+$('slug').addEventListener('input',()=>{if(!$('product-qrcode-panel').classList.contains('hidden'))renderProductQr()});
+$('copy-product-url').addEventListener('click',async()=>{
+  const url=productPageUrl();if(!url)return;
+  try{await navigator.clipboard.writeText(url);status('product-qr-status','Link copiado.')}catch{status('product-qr-status','Não foi possível copiar automaticamente. Selecione e copie o link acima.')}
+});
+$('download-product-qr').addEventListener('click',()=>{
+  const canvas=$('product-qrcode').querySelector('canvas');
+  const image=$('product-qrcode').querySelector('img');
+  const data=canvas?.toDataURL('image/png')||image?.src;
+  if(!data)return;
+  const link=document.createElement('a');link.href=data;link.download='qrcode-'+($('slug').value.trim()||'produto')+'.png';link.click();
+});
+
 function renderList(){
   const list=$('product-list');list.replaceChildren();
   if(!products.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Nenhum produto cadastrado.';list.appendChild(empty);return}
