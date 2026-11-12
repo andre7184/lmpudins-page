@@ -869,3 +869,30 @@ body { background:#200604; }
     margin: 0 !important;
   }
 }
+
+/* Integração segura com o sistema de receitas */
+.footer-actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.footer-integration{border:1px solid rgba(215,179,106,.45);background:transparent;color:#d7b36a;padding:10px 15px;border-radius:999px;font:inherit;font-size:.78rem;letter-spacing:.06em;cursor:pointer;transition:background .2s,border-color .2s}
+.footer-integration:hover{background:rgba(215,179,106,.1);border-color:#d7b36a}
+.integration-backdrop{position:fixed;inset:0;z-index:1200;background:rgba(12,7,9,.82);backdrop-filter:blur(8px);display:grid;place-items:center;padding:20px;overflow-y:auto}
+.integration-dialog{position:relative;width:min(100%,590px);max-height:min(90vh,850px);overflow:auto;background:#26151c;color:#f9eee2;border:1px solid rgba(215,179,106,.35);border-radius:22px;padding:clamp(24px,5vw,42px);box-shadow:0 25px 90px rgba(0,0,0,.5)}
+.integration-dialog h2{font-family:inherit;font-size:clamp(2rem,5vw,3rem);margin:10px 0}
+.integration-dialog>p,.integration-login p{color:#cbb9b7;line-height:1.65}
+.integration-close{position:absolute;right:16px;top:16px;width:40px;height:40px;border:1px solid rgba(255,255,255,.15);border-radius:50%;background:transparent;color:#f9eee2;display:grid;place-items:center;cursor:pointer}
+.integration-field{display:grid;gap:10px;margin-top:22px;padding:17px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:rgba(255,255,255,.035)}
+.integration-field label,.integration-login label{font-size:.82rem;color:#d7b36a;font-weight:700}
+.integration-field>code,.integration-secret code{display:block;overflow-wrap:anywhere;padding:12px;border-radius:8px;background:#170d11;color:#f9eee2;font-size:.82rem}
+.integration-field .button,.integration-login .button{justify-self:start;min-height:42px}
+.integration-login{display:grid;gap:13px;margin-top:24px}
+.integration-login>strong{color:#d7b36a}
+.integration-login label{display:grid;gap:7px}
+.integration-login input{width:100%;padding:12px 13px;border:1px solid #76515b;border-radius:9px;background:#170d11;color:#fff;font:inherit}
+.integration-login button:disabled{opacity:.65;cursor:wait}
+.integration-secret{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.integration-secret button{border:1px solid rgba(215,179,106,.4);border-radius:8px;padding:8px 12px;background:transparent;color:#d7b36a;cursor:pointer}
+.integration-instructions{margin-top:8px;color:#cbb9b7;font-size:.82rem;line-height:1.6;overflow-wrap:anywhere}
+.integration-instructions strong{color:#f9eee2}
+.integration-instructions code{color:#e7c982}
+.integration-feedback{color:#e7c982;font-size:.85rem;overflow-wrap:anywhere}
+.integration-security{display:block;margin-top:20px;color:#bba9a8;line-height:1.5}
+@media(max-width:600px){.integration-backdrop{padding:10px}.integration-dialog{padding:24px 18px;border-radius:16px}.footer-actions{gap:10px}}
