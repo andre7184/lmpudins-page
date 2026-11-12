@@ -112,7 +112,7 @@ export default function ProductPage() {
         <h2>Um sabor para <em>guardar na memória.</em></h2>
         <p style={styles.description}>{product.description || product.short_description || 'Uma experiência especial da coleção LM Pudins.'}</p>
       </section>
-      <div style={styles.versionsCta}><a href={'/versoes?produto='+encodeURIComponent(product.slug)} style={styles.cta}>Conhecer versões <ArrowUpRight size={17}/></a></div>
+      <div style={styles.versionsCta}><a href="/#sabores" style={styles.cta}>Ver sabores e versões <ArrowUpRight size={17}/></a></div>
       {Array.isArray(product.presentations) && product.presentations.length > 0 && <section style={styles.presentationsSection}>
         <p style={styles.sectionEyebrow}>NOSSAS VERSÕES</p><h2 style={styles.presentationsTitle}>O mesmo sabor, diferentes <em>experiências.</em></h2>
         <div style={styles.presentationGrid}>{product.presentations.map((presentation) => <article key={presentation.key || presentation.name} style={styles.presentationCard}>
