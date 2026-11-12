@@ -203,8 +203,28 @@ function App() {
     });
     return items.map((item, index) => ({ ...item, key: `${product.slug || product.id}-${item.src}-${index}` }));
   });
+  const productVersionGalleryItems = catalogProducts.flatMap(product => {
+    const items = [];
+    const add = (value, caption) => {
+      const src = typeof value === 'string' ? value : value?.url || value?.src || value?.image || value?.path || '';
+      if (src && !items.some(item => item.src === src)) items.push({ src, caption: caption || product.name, product, key: src });
+    };
+    (Array.isArray(product.images) ? product.images : []).filter(image => image && typeof image === 'object' && image.destination === 'versao').forEach(image => add(image, image.presentationName ? product.name + ' · ' + image.presentationName + (image.sizeName ? ' · ' + image.sizeName : '') : product.name));
+    (Array.isArray(product.presentations) ? product.presentations : []).forEach(presentation => {
+      add(presentation.image, product.name + ' · ' + presentation.name);
+      (Array.isArray(presentation.images) ? presentation.images : []).forEach(image => add(image, product.name + ' · ' + presentation.name));
+      (Array.isArray(presentation.sizes) ? presentation.sizes : []).forEach(size => {
+        add(size.image, product.name + ' · ' + presentation.name + ' · ' + size.name);
+        (Array.isArray(size.images) ? size.images : []).forEach(image => add(image, product.name + ' · ' + presentation.name + ' · ' + size.name));
+      });
+    });
+    return items.map((item,index) => ({...item,key:`${product.slug || product.id}-version-${index}-${item.src}`}));
+  });
   const galleryItems = [...independentGallery.map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins',product:null,key:'library-'+item.id})), ...productGalleryItems];
-  const versionsGalleryItems = productGalleryItems;
+  const versionsGalleryItems = [
+    ...independentGallery.filter(item=>item.destination==='versoes').map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins · Versões',product:null,key:'library-version-'+item.id})),
+    ...productVersionGalleryItems
+  ].filter((item,index,all)=>all.findIndex(candidate=>candidate.src===item.src)===index);
   const moveGallery = (step) => setGalleryIndex((current) => galleryItems.length ? (current + step + galleryItems.length) % galleryItems.length : 0);
   const moveVersionsGallery = (step) => setVersionsGalleryIndex((current) => versionsGalleryItems.length ? (current + step + versionsGalleryItems.length) % versionsGalleryItems.length : 0);
   const visibleGalleryItem = galleryItems.length ? galleryItems[galleryIndex % galleryItems.length] : null;
