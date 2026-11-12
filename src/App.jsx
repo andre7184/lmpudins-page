@@ -43,6 +43,8 @@ function ProductCard({ product, onOpen }) {
 }
 
 function ProductModal({ product, onClose }) {
+  const [showVersions, setShowVersions] = useState(false);
+  const [versionImageIndex, setVersionImageIndex] = useState(0);
   useEffect(() => {
     if (!product) return;
     const closeOnEscape = (event) => event.key === 'Escape' && onClose();
@@ -50,7 +52,28 @@ function ProductModal({ product, onClose }) {
     document.body.style.overflow = 'hidden';
     return () => { document.removeEventListener('keydown', closeOnEscape); document.body.style.overflow = ''; };
   }, [product, onClose]);
+  useEffect(() => { setShowVersions(false); setVersionImageIndex(0); }, [product]);
   if (!product) return null;
+  const presentations = Array.isArray(product.presentations) ? product.presentations : [];
+  const versionImages = presentations.flatMap((presentation) => {
+    const key = presentation.key || presentation.name;
+    const images = [];
+    const add = (value, caption) => {
+      const src = typeof value === 'string' ? value : value?.url || value?.src || value?.image || value?.path || '';
+      if (src) images.push({ src, caption: caption || value?.description || value?.caption || presentation.name });
+    };
+    add(presentation.image, presentation.name);
+    (Array.isArray(presentation.images) ? presentation.images : []).forEach(image => add(image, presentation.name));
+    (Array.isArray(presentation.sizes) ? presentation.sizes : []).forEach(size => {
+      add(size.image, presentation.name + ' · ' + size.name);
+      (Array.isArray(size.images) ? size.images : []).forEach(image => add(image, presentation.name + ' · ' + size.name));
+    });
+    (Array.isArray(product.images) ? product.images : []).filter(image => image && image.destination === 'versao' && (image.presentationKey === key || image.presentationName === presentation.name)).forEach(image => {
+      if (!image.sizeName || !(presentation.sizes || []).length || presentation.sizes.some(size => size.name === image.sizeName)) add(image, presentation.name + (image.sizeName ? ' · ' + image.sizeName : ''));
+    });
+    return images.map((image, index) => ({ ...image, key: key + '-' + index }));
+  }).filter((image, index, all) => all.findIndex(item => item.src === image.src) === index);
+  const currentVersionImage = versionImages.length ? versionImages[versionImageIndex % versionImages.length] : null;
   const nutrition = product.nutrition || {};
   const parseNutrients = (value) => {
     if (Array.isArray(value)) return value;
@@ -80,6 +103,25 @@ function ProductModal({ product, onClose }) {
         <h2 id="modal-title">{product.name}</h2>
         <p>{product.description}</p>
         <div className="ingredient-block"><span>INGREDIENTES DO CATÁLOGO</span><p>{product.ingredients}</p></div>
+        <section className="modal-versions">
+          <button type="button" className="button button-quiet modal-versions-toggle" aria-expanded={showVersions} onClick={() => setShowVersions(value => !value)}>
+            {showVersions ? 'Ocultar versões' : 'Versões disponíveis'} <ArrowRight size={16} />
+          </button>
+          {showVersions && <div className="modal-versions-content">
+            <span className="eyebrow">APRESENTAÇÕES DE {product.name.toUpperCase()}</span>
+            <h3>O mesmo sabor, diferentes experiências.</h3>
+            {currentVersionImage && <div className="version-image-carousel">
+              <button type="button" aria-label="Imagem anterior" onClick={() => setVersionImageIndex(index => (index - 1 + versionImages.length) % versionImages.length)} disabled={versionImages.length < 2}><ArrowLeft size={19}/></button>
+              <figure><img src={currentVersionImage.src} alt={currentVersionImage.caption}/><figcaption>{currentVersionImage.caption}</figcaption></figure>
+              <button type="button" aria-label="Próxima imagem" onClick={() => setVersionImageIndex(index => (index + 1) % versionImages.length)} disabled={versionImages.length < 2}><ArrowRight size={19}/></button>
+            </div>}
+            {presentations.length ? <div className="modal-presentation-grid">{presentations.map(presentation => <article key={presentation.key || presentation.name}>
+              <h4>{presentation.name}</h4>{presentation.description && <p>{presentation.description}</p>}
+              {(presentation.sizes || []).map(size => <div className="modal-size-row" key={size.name}><strong>{size.name}</strong><span>{size.finalWeightG ? 'Peso líquido final: ' + size.finalWeightG + ' g' : 'Peso líquido final a confirmar'}</span></div>)}
+            </article>)}</div> : <p>As versões deste sabor ainda não foram cadastradas.</p>}
+            {!versionImages.length && <p className="nutrition-help">As imagens das versões aparecerão aqui quando forem cadastradas no Admin.</p>}
+          </div>}
+        </section>
         {(nutrients.length > 0 || otherNutrition.length > 0) && <div className="ingredient-block nutrition-block"><span>INFORMAÇÃO NUTRICIONAL</span>
           <p className="nutrition-serving">Porção: {nutrition.porcao || '140 g (1 unidade / pote)'}</p>
           {nutrients.length > 0 ? <div className="nutrition-table-wrap"><table className="nutrition-table"><thead><tr><th>Quantidade por porção</th><th>Quantidade</th><th>%VD*</th></tr></thead><tbody>{nutrients.map((item, index) => <tr key={`${item[0] || 'nutriente'}-${index}`}><th scope="row">{item[0]}</th><td>{item[1] ?? '—'}</td><td>{item[2] ?? '—'}</td></tr>)}</tbody></table></div> : <table className="nutrition-table"><tbody>{otherNutrition.map(([key,value]) => <tr key={key}><th scope="row">{key.replaceAll('_',' ')}</th><td>{String(value)}</td></tr>)}</tbody></table>}
@@ -100,6 +142,7 @@ function App() {
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [scrolled, setScrolled] = useState(false);
     const [galleryIndex, setGalleryIndex] = useState(0);
+  const [versionsGalleryIndex, setVersionsGalleryIndex] = useState(0);
   const [independentGallery, setIndependentGallery] = useState([]);
   const filters = ['Todos', 'Frutados', 'Intensos', 'Cremosos'];
   useEffect(() => {
@@ -114,19 +157,34 @@ function App() {
     return () => { cancelled = true; };
   }, []);
   useEffect(() => { fetch('/api/gallery').then(r=>r.ok?r.json():[]).then(items=>setIndependentGallery(Array.isArray(items)?items:[])).catch(()=>{}); }, []);
-  const galleryItems = [...independentGallery.map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins',product:null,key:'library-'+item.id})), ...catalogProducts.flatMap((product) => {
-    const extraImages = Array.isArray(product.images) ? product.images : Array.isArray(product.gallery) ? product.gallery : [];
-    const normalized = extraImages.map((item) => typeof item === 'string' ? { src: item, caption: '' } : {
-      src: item?.url || item?.src || item?.image || item?.path || '',
-      caption: item?.description || item?.caption || item?.alt || item?.title || ''
-    }).filter((item) => item.src);
-    if (product.image && !normalized.some((item) => item.src === product.image)) {
-      normalized.unshift({ src: product.image, caption: product.name });
-    }
-    return normalized.map((item, index) => ({ ...item, product, key: `${product.slug || product.id}-${item.src}-${index}` }));
-  })];
+  const productGalleryItems = catalogProducts.flatMap((product) => {
+    const items = [];
+    const add = (value, caption, key) => {
+      const src = typeof value === 'string' ? value : value?.url || value?.src || value?.image || value?.path || '';
+      if (src && !items.some(item => item.src === src)) items.push({ src, caption: caption || value?.description || value?.caption || product.name, product, key: key || src });
+    };
+    add(product.image, product.name, 'main');
+    (Array.isArray(product.images) ? product.images : Array.isArray(product.gallery) ? product.gallery : []).forEach((image, index) => add(image, image?.description || product.name, 'product-' + index));
+    (Array.isArray(product.presentations) ? product.presentations : []).forEach(presentation => {
+      add(presentation.image, presentation.name, 'presentation-' + (presentation.key || presentation.name));
+      (Array.isArray(presentation.images) ? presentation.images : []).forEach((image, index) => add(image, presentation.name, 'presentation-' + index));
+      (Array.isArray(presentation.sizes) ? presentation.sizes : []).forEach(size => {
+        add(size.image, presentation.name + ' · ' + size.name, 'size-' + size.name);
+        (Array.isArray(size.images) ? size.images : []).forEach((image, index) => add(image, presentation.name + ' · ' + size.name, 'size-' + size.name + '-' + index));
+      });
+    });
+    return items.map((item, index) => ({ ...item, key: `${product.slug || product.id}-${item.src}-${index}` }));
+  });
+  const galleryItems = [...independentGallery.map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins',product:null,key:'library-'+item.id})), ...productGalleryItems];
+  const versionsGalleryItems = productGalleryItems;
   const moveGallery = (step) => setGalleryIndex((current) => galleryItems.length ? (current + step + galleryItems.length) % galleryItems.length : 0);
+  const moveVersionsGallery = (step) => setVersionsGalleryIndex((current) => versionsGalleryItems.length ? (current + step + versionsGalleryItems.length) % versionsGalleryItems.length : 0);
   const visibleGalleryItem = galleryItems.length ? galleryItems[galleryIndex % galleryItems.length] : null;
+  const visibleVersionGalleryItem = versionsGalleryItems.length ? versionsGalleryItems[versionsGalleryIndex % versionsGalleryItems.length] : null;
+  const openFlavorCategory = (category) => {
+    setActiveFilter(category);
+    document.getElementById('sabores')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
   const visibleProducts = catalogProducts.filter((p) => {
     if (activeFilter === 'Todos') return true;
     if (activeFilter === 'Frutados') return p.category === 'Frutados' || ['berry','orange','passion','guava'].includes(p.tone);
@@ -148,7 +206,7 @@ function App() {
       <div className="header-inner"><Logo />
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuOpen}>{menuOpen ? <X /> : <Menu />}</button>
         <nav className={menuOpen ? 'nav nav-open' : 'nav'} aria-label="Navegação principal">
-          <a href="#inicio" onClick={closeMenu}>Início</a><a href="#sabores" onClick={closeMenu}>Sabores</a><a href="/versoes" onClick={closeMenu}>Nossas versões</a><a href="#quem-somos" onClick={closeMenu}>Quem somos</a><a href="#galeria" onClick={closeMenu}>Galeria</a><a href="#contato" onClick={closeMenu}>Contato</a>
+          <a href="#inicio" onClick={closeMenu}>Início</a><a href="#sabores" onClick={closeMenu}>Sabores</a><a href="#versoes" onClick={closeMenu}>Nossas versões</a><a href="#quem-somos" onClick={closeMenu}>Quem somos</a><a href="#galeria" onClick={closeMenu}>Galeria</a><a href="#contato" onClick={closeMenu}>Contato</a>
           <a className="nav-cta" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>Peça pelo iFood <ArrowUpRight size={15} /></a>
         </nav>
       </div>
@@ -185,6 +243,28 @@ function App() {
         <div className="section-heading reveal"><div><span className="eyebrow eyebrow-gold">NOSSO CATÁLOGO</span><h2>{catalogProducts.length} {catalogProducts.length === 1 ? "Sabor Incrível" : "Sabores Incríveis"}</h2></div><p>Sete personalidades, uma mesma paixão por sobremesas que ficam na memória.</p></div>
         <div className="catalog-toolbar"><span className="catalog-count" aria-live="polite">{String(visibleProducts.length).padStart(2, '0')} {visibleProducts.length === 1 ? 'SABOR DISPONÍVEL' : 'SABORES PARA DESCOBRIR'}</span><div className="filter-list" role="group" aria-label="Filtrar sabores">{filters.map((filter) => <button type="button" key={filter} aria-pressed={activeFilter === filter} className={activeFilter === filter ? 'filter-button filter-active' : 'filter-button'} onClick={() => setActiveFilter(filter)}>{filter}</button>)}</div></div>
         <div className="product-grid">{visibleProducts.map((product) => <ProductCard key={product.id} product={product} onOpen={setSelectedProduct} />)}</div>
+      </section>
+
+      <section className="versions-section" id="versoes">
+        <div className="versions-section-heading">
+          <span className="eyebrow eyebrow-gold">COLEÇÃO LM PUDINS</span>
+          <h2>Nossas <em>versões</em></h2>
+          <p>Descubra as diferentes apresentações dos nossos pudins. Escolha um sabor para conhecer as opções disponíveis em copo, forminha e outros tamanhos.</p>
+        </div>
+        <div className="versions-section-actions" aria-label="Explorar sabores por categoria">
+          <button type="button" onClick={() => openFlavorCategory('Todos')}>Todos os sabores <ArrowRight size={16}/></button>
+          <button type="button" onClick={() => openFlavorCategory('Frutados')}>Sabores frutados <ArrowRight size={16}/></button>
+          <button type="button" onClick={() => openFlavorCategory('Intensos')}>Sabores intensos <ArrowRight size={16}/></button>
+          <button type="button" onClick={() => openFlavorCategory('Cremosos')}>Sabores cremosos <ArrowRight size={16}/></button>
+        </div>
+        <div className="versions-showcase">
+          <div className="versions-showcase-copy"><span className="eyebrow">SABORES E APRESENTAÇÕES</span><h3>Uma coleção para<br/><em>cada momento.</em></h3><p>As imagens dos sabores e de suas versões são reunidas neste carrossel.</p></div>
+          <div className="versions-showcase-carousel">
+            <button type="button" className="gallery-arrow" onClick={() => moveVersionsGallery(-1)} aria-label="Imagem anterior" disabled={versionsGalleryItems.length < 2}><ArrowLeft size={20}/></button>
+            {visibleVersionGalleryItem ? <figure><img src={visibleVersionGalleryItem.src} alt={visibleVersionGalleryItem.caption}/><figcaption>{visibleVersionGalleryItem.caption}</figcaption></figure> : <p className="gallery-empty">As imagens serão exibidas aqui quando forem cadastradas.</p>}
+            <button type="button" className="gallery-arrow" onClick={() => moveVersionsGallery(1)} aria-label="Próxima imagem" disabled={versionsGalleryItems.length < 2}><ArrowRight size={20}/></button>
+          </div>
+        </div>
       </section>
 
       <section className="feature-section" id="essencia">
