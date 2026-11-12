@@ -3,7 +3,7 @@ name: Deploy LM Pudins to VPS
 on:
   push:
     branches:
-      - versao_0-2
+      - versao_0-5
   workflow_dispatch:
     inputs:
       deploy_branch:
@@ -11,8 +11,8 @@ on:
         required: true
         type: choice
         options:
-          - versao_0-2
-        default: versao_0-2
+          - versao_0-5
+        default: versao_0-5
 
 permissions:
   contents: read
@@ -37,7 +37,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           COOKIE_SECURE: ${{ secrets.COOKIE_SECURE }}
           VITE_WHATSAPP_NUMBER: ${{ secrets.VITE_WHATSAPP_NUMBER }}
-          DEPLOY_BRANCH: ${{ github.event.inputs.deploy_branch || 'versao_0-2' }}
+          DEPLOY_BRANCH: ${{ github.event.inputs.deploy_branch || 'versao_0-5' }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: deployer
