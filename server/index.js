@@ -519,10 +519,13 @@ async function initDb() {
     short_description TEXT NOT NULL DEFAULT '', description TEXT NOT NULL DEFAULT '',
     ingredients TEXT NOT NULL DEFAULT '', image TEXT NOT NULL DEFAULT '', images JSONB NOT NULL DEFAULT '[]'::jsonb,
     category TEXT NOT NULL DEFAULT 'Cremosos', nutrition JSONB NOT NULL DEFAULT '{}'::jsonb,
+    presentations JSONB NOT NULL DEFAULT '[]'::jsonb, components JSONB NOT NULL DEFAULT '{}'::jsonb,
     active BOOLEAN NOT NULL DEFAULT TRUE, sort_order INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS images JSONB NOT NULL DEFAULT '[]'::jsonb`);
+  await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS presentations JSONB NOT NULL DEFAULT '[]'::jsonb`);
+  await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS components JSONB NOT NULL DEFAULT '{}'::jsonb`);
   await pool.query(`CREATE TABLE IF NOT EXISTS media_library (
     id BIGSERIAL PRIMARY KEY, url TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
     category TEXT NOT NULL DEFAULT 'Institucional', active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -605,9 +608,9 @@ app.post('/api/admin/products', isAdmin, async (req,res) => {
   const p = req.body || {};
   if (!String(p.slug||'').match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) || !String(p.name||'').trim()) return res.status(400).json({error:'Informe nome e identificador (slug) válido, usando letras minúsculas, números e hífens.'});
   try {
-    const result = await pool.query(`INSERT INTO products (slug,name,short_description,description,ingredients,image,images,category,nutrition,active,sort_order)
-      VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9::jsonb,$10,$11) RETURNING *`,
-      [p.slug,p.name,p.short_description||'',p.description||'',p.ingredients||'',p.image||'',JSON.stringify(Array.isArray(p.images)?p.images:[]),p.category||'Cremosos',JSON.stringify(p.nutrition||{}),p.active!==false,Number(p.sort_order)||0]);
+    const result = await pool.query(`INSERT INTO products (slug,name,short_description,description,ingredients,image,images,category,nutrition,presentations,components,active,sort_order)
+      VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9::jsonb,$10::jsonb,$11::jsonb,$12,$13) RETURNING *`,
+      [p.slug,p.name,p.short_description||'',p.description||'',p.ingredients||'',p.image||'',JSON.stringify(Array.isArray(p.images)?p.images:[]),p.category||'Cremosos',JSON.stringify(p.nutrition||{}),JSON.stringify(Array.isArray(p.presentations)?p.presentations:[]),JSON.stringify(p.components&&typeof p.components==='object'&&!Array.isArray(p.components)?p.components:{}),p.active!==false,Number(p.sort_order)||0]);
     res.status(201).json(publicProduct(result.rows[0]));
   } catch (e) { if(e.code==='23505') return res.status(409).json({error:'Já existe um produto com esse identificador.'}); throw e; }
 });
@@ -615,8 +618,8 @@ app.put('/api/admin/products/:id', isAdmin, async (req,res) => {
   const p = req.body || {};
   if (!String(p.slug||'').match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) || !String(p.name||'').trim()) return res.status(400).json({error:'Informe nome e identificador (slug) válido.'});
   try {
-    const result = await pool.query(`UPDATE products SET slug=$1,name=$2,short_description=$3,description=$4,ingredients=$5,image=$6,images=COALESCE($7::jsonb,images),category=$8,nutrition=$9::jsonb,active=$10,sort_order=$11,updated_at=NOW()
-      WHERE id=$12 RETURNING *`, [p.slug,p.name,p.short_description||'',p.description||'',p.ingredients||'',p.image||'',p.images === undefined ? null : JSON.stringify(Array.isArray(p.images)?p.images:[]),p.category||'Cremosos',JSON.stringify(p.nutrition||{}),p.active!==false,Number(p.sort_order)||0,req.params.id]);
+    const result = await pool.query(`UPDATE products SET slug=$1,name=$2,short_description=$3,description=$4,ingredients=$5,image=$6,images=COALESCE($7::jsonb,images),category=$8,nutrition=$9::jsonb,presentations=$10::jsonb,components=$11::jsonb,active=$12,sort_order=$13,updated_at=NOW()
+      WHERE id=$14 RETURNING *`, [p.slug,p.name,p.short_description||'',p.description||'',p.ingredients||'',p.image||'',p.images === undefined ? null : JSON.stringify(Array.isArray(p.images)?p.images:[]),p.category||'Cremosos',JSON.stringify(p.nutrition||{}),JSON.stringify(Array.isArray(p.presentations)?p.presentations:[]),JSON.stringify(p.components&&typeof p.components==='object'&&!Array.isArray(p.components)?p.components:{}),p.active!==false,Number(p.sort_order)||0,req.params.id]);
     if (!result.rowCount) return res.status(404).json({error:'Produto não encontrado.'});
     res.json(publicProduct(result.rows[0]));
   } catch (e) { if(e.code==='23505') return res.status(409).json({error:'Já existe um produto com esse identificador.'}); throw e; }
