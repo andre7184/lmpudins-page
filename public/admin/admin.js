@@ -40,7 +40,7 @@ function renderGallery(){
     const path=document.createElement('small');path.textContent=item.url||item.src||item.image||item.path;
     details.append(desc,destination,path);
     const remove=document.createElement('button');remove.type='button';remove.className='btn danger';remove.textContent='Remover';remove.addEventListener('click',()=>{galleryImages.splice(index,1);renderGallery()});
-    if(index===0){const main=document.createElement('small');main.className='main-image-label';main.textContent='IMAGEM PRINCIPAL';details.prepend(main)}row.append(img,details,remove);list.appendChild(row);
+    if(item.destination!=='versao'&&galleryImages.findIndex(image=>image.destination!=='versao')===index){const main=document.createElement('small');main.className='main-image-label';main.textContent='IMAGEM PRINCIPAL';details.prepend(main)}row.append(img,details,remove);list.appendChild(row);
   });
 }
 function clearForm(){
@@ -107,9 +107,12 @@ $('delete-product').addEventListener('click',async()=>{if(!selectedId||!confirm(
 async function uploadImage(){
   const file=$('gallery-file').files?.[0];if(!file){status('gallery-upload-status','Selecione uma imagem antes de enviar.');return}
   const destination=$('gallery-destination').value;
-  const presentationKey=$('version-presentation').value;
-  const presentation=(JSON.parse($('presentations').value||'[]').find((item,index)=>(item.key||item.name||String(index))===presentationKey));
-  if(destination==='versao'&&!presentation){status('gallery-upload-status','Selecione uma apresentação antes de enviar a imagem.');return}
+  let presentation=null;
+  if(destination==='versao'){
+    try{const list=JSON.parse($('presentations').value||'[]');presentation=list.find((item,index)=>(item.key||item.name||String(index))===$('version-presentation').value)||null}
+    catch{status('gallery-upload-status','Corrija o JSON de apresentações antes de associar uma imagem a uma versão.');return}
+    if(!presentation){status('gallery-upload-status','Selecione uma apresentação antes de enviar a imagem.');return}
+  }
   const body=new FormData();body.append('image',file);status('gallery-upload-status','Enviando imagem…');
   try{
     const response=await fetch('/api/admin/uploads',{method:'POST',credentials:'same-origin',body});
