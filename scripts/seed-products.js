@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { randomUUID } from 'node:crypto';
 import { products } from '../src/products.js';
 
 const { Pool } = pg;
@@ -19,8 +20,8 @@ async function seedProducts() {
   for (const [index, product] of products.entries()) {
     const result = await pool.query(
       `INSERT INTO products
-        (slug, name, short_description, description, ingredients, image, images, category, nutrition, active, sort_order)
-       VALUES ($1,$2,$3,$4,$5,$6,'[]'::jsonb,$7,'{}'::jsonb,TRUE,$8)
+        (slug, name, short_description, description, ingredients, image, images, category, nutrition, active, sort_order, integration_id)
+       VALUES ($1,$2,$3,$4,$5,$6,'[]'::jsonb,$7,'{}'::jsonb,TRUE,$8,$9)
        ON CONFLICT (slug) DO NOTHING
        RETURNING id`,
       [
@@ -32,6 +33,7 @@ async function seedProducts() {
         product.image || '',
         categoryByTone[product.tone] || 'Cremosos',
         index + 1,
+        randomUUID(),
       ],
     );
     if (result.rowCount) inserted += 1;
