@@ -532,6 +532,8 @@ async function initDb() {
     category TEXT NOT NULL DEFAULT 'Institucional', active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
+  await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS destination TEXT NOT NULL DEFAULT 'geral'`);
+
   await pool.query(`CREATE TABLE IF NOT EXISTS admin_users (
     id BIGSERIAL PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -658,9 +660,15 @@ app.post('/api/integrations/products/:integrationId/nutrition', integrationRateL
   if (!result.rowCount) return res.status(404).json({error:'Produto não encontrado para o ID de integração informado.'});
   res.json({success:true,message:'Tabela nutricional atualizada.',product:result.rows[0]});
 });
-app.get('/api/gallery', async (_req,res) => { const result=await pool.query('SELECT id,url,description,category FROM media_library WHERE active=TRUE ORDER BY id DESC'); res.json(result.rows); });
+app.get('/api/gallery', async (_req,res) => { const result=await pool.query('SELECT id,url,description,category,destination FROM media_library WHERE active=TRUE ORDER BY id DESC'); res.json(result.rows); });
 app.get('/api/admin/gallery', isAdmin, async (_req,res) => { const result=await pool.query('SELECT * FROM media_library ORDER BY id DESC'); res.json(result.rows); });
-app.post('/api/admin/gallery', isAdmin, async (req,res) => { const {url,description,category}=req.body||{}; if(!url) return res.status(400).json({error:'Envie uma imagem antes de salvar.'}); const result=await pool.query('INSERT INTO media_library(url,description,category) VALUES($1,$2,$3) RETURNING *',[url,String(description||''),String(category||'Institucional')]); res.status(201).json(result.rows[0]); });
+app.post('/api/admin/gallery', isAdmin, async (req,res) => {
+  const {url,description,category,destination}=req.body||{};
+  if(!url) return res.status(400).json({error:'Envie uma imagem antes de salvar.'});
+  const mediaDestination=['geral','versoes'].includes(destination)?destination:'geral';
+  const result=await pool.query('INSERT INTO media_library(url,description,category,destination) VALUES($1,$2,$3,$4) RETURNING *',[url,String(description||''),String(category||'Institucional'),mediaDestination]);
+  res.status(201).json(result.rows[0]);
+});
 app.delete('/api/admin/gallery/:id', isAdmin, async (req,res) => { const result=await pool.query('DELETE FROM media_library WHERE id=$1 RETURNING id',[req.params.id]); if(!result.rowCount)return res.status(404).json({error:'Imagem não encontrada.'}); res.status(204).end(); });
 app.get('/api/products', async (_req,res) => {
   const result = await pool.query('SELECT * FROM products WHERE active=TRUE ORDER BY sort_order, id');
