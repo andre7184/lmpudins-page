@@ -128,3 +128,53 @@ function printLabel(p){
 }
 $('close-label').addEventListener('click',closeLabel);
 $('label-modal').addEventListener('click',e=>{if(e.target.matches('[data-close-label]'))closeLabel()});
+
+/* Integração API: disponível somente dentro do painel autenticado. */
+let integrationTokenVisible=false;
+async function loadIntegrationSettings(){
+  status('integration-status','Carregando dados da API…');
+  try{
+    const data=await api('/api/admin/integration');
+    $('integration-url').value=data.apiUrl;
+    $('integration-token').value=data.apiKey||'';
+    $('integration-token').placeholder=data.apiKey?'':'Nenhum token gerado';
+    $('toggle-integration-token').disabled=!data.apiKey;
+    $('copy-integration-token').disabled=!data.apiKey;
+    integrationTokenVisible=false;$('integration-token').type='password';$('toggle-integration-token').textContent='Mostrar token';
+    status('integration-status',data.apiKey?'Token atual carregado.':'Gere um token para iniciar a integração.');
+  }catch(err){status('integration-status',err.message)}
+}
+$('open-integration').addEventListener('click',async()=>{
+  $('integration-modal').classList.remove('hidden');document.body.style.overflow='hidden';
+  await loadIntegrationSettings();
+});
+function closeIntegrationModal(){$('integration-modal').classList.add('hidden');document.body.style.overflow=''}
+$('close-integration').addEventListener('click',closeIntegrationModal);
+$('integration-modal').addEventListener('click',e=>{if(e.target.matches('[data-close-integration]'))closeIntegrationModal()});
+$('toggle-integration-token').addEventListener('click',()=>{
+  integrationTokenVisible=!integrationTokenVisible;
+  $('integration-token').type=integrationTokenVisible?'text':'password';
+  $('toggle-integration-token').textContent=integrationTokenVisible?'Ocultar token':'Mostrar token';
+});
+$('copy-integration-url').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText($('integration-url').value);status('integration-status','URL copiada.')}
+  catch{status('integration-status','Não foi possível copiar automaticamente. Selecione e copie a URL.')}
+});
+$('copy-integration-token').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText($('integration-token').value);status('integration-status','Token copiado.')}
+  catch{status('integration-status','Não foi possível copiar automaticamente. Mostre e copie o token manualmente.')}
+});
+$('generate-integration-token').addEventListener('click',async()=>{
+  if(!confirm('Gerar um novo token? O token atual deixará de funcionar imediatamente.'))return;
+  const button=$('generate-integration-token');button.disabled=true;status('integration-status','Gerando novo token…');
+  try{
+    const data=await api('/api/admin/integration/rotate',{method:'POST',body:JSON.stringify({})});
+    $('integration-token').value=data.apiKey;$('integration-token').type='text';integrationTokenVisible=true;
+    $('toggle-integration-token').disabled=false;$('toggle-integration-token').textContent='Ocultar token';$('copy-integration-token').disabled=false;
+    status('integration-status','Novo token gerado. Copie-o e atualize a credencial no sistema de receitas.');
+  }catch(err){status('integration-status',err.message)}
+  finally{button.disabled=false}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!$('integration-modal').classList.contains('hidden'))closeIntegrationModal();
+});
