@@ -28,5 +28,7 @@ jobs:
         run: npm install
       - name: Validate API syntax
         run: node --check server/index.js
+      - name: Validate admin JavaScript syntax
+        run: node --check public/admin/admin.js
       - name: Build public website
         run: npm run build
