@@ -1,5 +1,9 @@
 name: Deploy LM Pudins to VPS
 
+concurrency:
+  group: lm-pudins-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
