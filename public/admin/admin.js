@@ -39,6 +39,9 @@ function productPageUrl(){
 function renderProductQr(){
   const url=productPageUrl(), target=$('product-qrcode');
   $('product-page-url').textContent=url||'Informe o identificador do produto para gerar o QR Code.';
+  const integrationId=products.find(p=>String(p.id)===String(selectedId))?.integration_id||'';
+  $('product-integration-id').textContent=integrationId||'Salve o produto para gerar o ID permanente.';
+  $('copy-product-integration-id').disabled=!integrationId;
   target.replaceChildren();
   $('download-product-qr').disabled=!url;
   $('copy-product-url').disabled=!url;
@@ -46,6 +49,7 @@ function renderProductQr(){
   new QRCode(target,{text:url,width:190,height:190,colorDark:'#241319',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
 }
 $('slug').addEventListener('input',()=>{if(!$('product-qrcode-panel').classList.contains('hidden'))renderProductQr()});
+$('copy-product-integration-id').addEventListener('click',async()=>{const id=$('product-integration-id').textContent;if(!id||id.startsWith('Salve'))return;try{await navigator.clipboard.writeText(id);status('product-qr-status','ID de integração copiado.')}catch{status('product-qr-status','Não foi possível copiar automaticamente. Selecione o ID acima.')}});
 $('copy-product-url').addEventListener('click',async()=>{
   const url=productPageUrl();if(!url)return;
   try{await navigator.clipboard.writeText(url);status('product-qr-status','Link copiado.')}catch{status('product-qr-status','Não foi possível copiar automaticamente. Selecione e copie o link acima.')}
