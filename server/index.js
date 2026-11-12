@@ -616,6 +616,12 @@ app.post('/api/auth/login', rateLimit({windowMs:15*60*1000, limit:10, standardHe
   });
 });
 app.get('/api/auth/me', (req,res) => req.session?.adminId ? res.json({user:{username:req.session.username}}) : res.status(401).json({error:'Não autenticado.'}));
+app.post('/api/admin/integration/rotate', isAdmin, async (_req,res) => {
+  const apiKey = randomBytes(32).toString('hex');
+  const result = await pool.query('UPDATE api_integration_settings SET api_key=$1,updated_at=NOW() WHERE id=1 RETURNING api_key', [apiKey]);
+  if (!result.rowCount) return res.status(503).json({error:'A integração ainda não foi inicializada.'});
+  res.json({success:true,apiKey:result.rows[0].api_key});
+});
 app.get('/api/admin/integration', isAdmin, async (_req,res) => {
   const result = await pool.query('SELECT api_key FROM api_integration_settings WHERE id=1');
   if (!result.rowCount) return res.status(503).json({error:'A integração ainda não foi inicializada.'});
