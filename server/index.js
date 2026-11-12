@@ -630,14 +630,26 @@ app.get('/api/admin/integration', isAdmin, async (_req,res) => {
 });
 app.post('/api/auth/logout', (req,res) => req.session.destroy(() => {res.clearCookie('lm_admin_session');res.status(204).end();}));
 const integrationRateLimit = rateLimit({windowMs:60*1000, limit:60, standardHeaders:true, legacyHeaders:false});
-app.post('/api/integrations/products/:integrationId/nutrition', integrationRateLimit, async (req,res) => {
+async function integrationKeyIsValid(req) {
   const suppliedKey = String(req.get('X-LM-API-Key') || '');
   const keyResult = await pool.query('SELECT api_key FROM api_integration_settings WHERE id=1');
   const expectedKey = keyResult.rows[0]?.api_key || '';
   const suppliedBuffer = Buffer.from(suppliedKey);
   const expectedBuffer = Buffer.from(expectedKey);
-  const authorized = suppliedBuffer.length === expectedBuffer.length && suppliedBuffer.length > 0 && timingSafeEqual(suppliedBuffer, expectedBuffer);
-  if (!authorized) return res.status(401).json({error:'Chave de integração inválida.'});
+  return suppliedBuffer.length === expectedBuffer.length && suppliedBuffer.length > 0 && timingSafeEqual(suppliedBuffer, expectedBuffer);
+}
+app.post('/api/integrations/products/test', integrationRateLimit, async (req,res) => {
+  if (!(await integrationKeyIsValid(req))) return res.status(401).json({success:false,code:'INVALID_TOKEN',message:'Token inválido ou não autorizado.'});
+  res.json({success:true,code:'AUTHENTICATED',message:'Autenticação realizada com sucesso. API LM Pudins disponível.'});
+});
+app.get('/api/integrations/products/:integrationId/validate', integrationRateLimit, async (req,res) => {
+  if (!(await integrationKeyIsValid(req))) return res.status(401).json({success:false,code:'INVALID_TOKEN',message:'Token inválido ou não autorizado.'});
+  const result = await pool.query('SELECT integration_id,slug,name,active FROM products WHERE integration_id=$1', [req.params.integrationId]);
+  if (!result.rowCount) return res.status(404).json({success:false,code:'PRODUCT_NOT_FOUND',message:'Token autenticado, mas o ID de integração não corresponde a nenhum produto.'});
+  res.json({success:true,code:'PRODUCT_FOUND',message:'Autenticação e vínculo do produto confirmados.',product:result.rows[0]});
+});
+app.post('/api/integrations/products/:integrationId/nutrition', integrationRateLimit, async (req,res) => {
+  if (!(await integrationKeyIsValid(req))) return res.status(401).json({error:'Chave de integração inválida.'});
   const nutrition = req.body?.nutrition;
   if (!nutrition || typeof nutrition !== 'object' || Array.isArray(nutrition) || !Object.keys(nutrition).length) {
     return res.status(400).json({error:'Envie a tabela nutricional no campo nutrition como um objeto JSON não vazio.'});
