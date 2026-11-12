@@ -112,6 +112,22 @@ export default function ProductPage() {
         <h2>Um sabor para <em>guardar na memória.</em></h2>
         <p style={styles.description}>{product.description || product.short_description || 'Uma experiência especial da coleção LM Pudins.'}</p>
       </section>
+      {Array.isArray(product.presentations) && product.presentations.length > 0 && <section style={styles.presentationsSection}>
+        <p style={styles.sectionEyebrow}>NOSSAS VERSÕES</p><h2 style={styles.presentationsTitle}>O mesmo sabor, diferentes <em>experiências.</em></h2>
+        <div style={styles.presentationGrid}>{product.presentations.map((presentation) => <article key={presentation.key || presentation.name} style={styles.presentationCard}>
+          {presentation.image && <img src={presentation.image} alt={presentation.name} style={styles.presentationImage}/>}
+          <h3>{presentation.name}</h3>
+          {Array.isArray(presentation.sizes) && presentation.sizes.map((size) => <div key={size.name} style={styles.sizeRow}>
+            <strong>{size.name}</strong>{size.finalWeightG ? <span>Peso líquido medido: {size.finalWeightG} g</span> : <span>Peso líquido final ainda não cadastrado</span>}
+            {size.image && <img src={size.image} alt={presentation.name+' '+size.name} style={styles.sizeImage}/>}
+            {size.components && <small>Composição de montagem: {['carameloG','massaG','geleiaG'].filter(k=>size.components[k]!==undefined).map(k=>{const v=size.components[k];return (k==='carameloG'?'Caramelo':k==='massaG'?'Massa':'Geleia')+': '+(typeof v==='object'?(v.min+'–'+v.max):v)+' g'}).join(' · ')}</small>}
+          </div>)}
+        </article>)}</div>
+      </section>}
+      {product.components && Object.keys(product.components).length > 0 && <section style={styles.componentSection}>
+        <h2>Composição por componente</h2><p>As receitas são organizadas por massa/pudim, caramelo e geleia. A informação nutricional por componente será exibida quando os dados estiverem cadastrados e validados.</p>
+        <div style={styles.componentGrid}>{Object.entries(product.components).map(([key,value])=><div key={key}><h3>{({massa:'Massa / pudim',caramelo:'Caramelo',geleia:'Geleia / cobertura'})[key]||key}</h3><p>{Array.isArray(value.ingredients)?value.ingredients.map(x=>typeof x==='string'?x:x.name).filter(Boolean).join(', '):''}</p></div>)}</div>
+      </section>}
       <div className="product-page-info-grid" style={styles.infoGrid}>
         <section style={styles.section}>
           <h2>Ingredientes</h2>
@@ -178,6 +194,15 @@ const styles = {
   dot:{width:8,height:8,borderRadius:20,border:0,background:'#8e7375',cursor:'pointer',padding:0},
   dotActive:{width:25,background:'#e5c780'},
   details:{maxWidth:1000,margin:'58px auto 0'},
+  presentationsSection:{margin:'42px 0',padding:'34px 0',borderTop:'1px solid #65434c',borderBottom:'1px solid #65434c'},
+  presentationsTitle:{fontFamily:'Georgia,serif',fontWeight:400,fontSize:'clamp(28px,4vw,42px)',textAlign:'center',margin:'8px 0 28px'},
+  presentationGrid:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:18},
+  presentationCard:{padding:20,border:'1px solid #65434c',borderRadius:12,background:'#24151b'},
+  presentationImage:{width:'100%',maxHeight:220,objectFit:'cover',borderRadius:8,marginBottom:12},
+  sizeRow:{display:'flex',flexDirection:'column',gap:5,padding:'12px 0',borderTop:'1px solid #65434c',fontSize:13,color:'#d7c7c1'},
+  sizeImage:{width:'100%',maxHeight:150,objectFit:'cover',borderRadius:7,marginTop:6},
+  componentSection:{margin:'34px 0',padding:'28px',background:'#24151b',border:'1px solid #65434c',borderRadius:12},
+  componentGrid:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:18},
   descriptionSection:{maxWidth:760,margin:'0 auto 42px',textAlign:'center'},
   sectionEyebrow:{fontSize:10,letterSpacing:'.2em',color:'#d7b36a',fontWeight:700},
   infoGrid:{display:'grid',gridTemplateColumns:'minmax(0,.8fr) minmax(0,1.2fr)',gap:44},
