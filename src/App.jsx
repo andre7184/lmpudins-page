@@ -45,6 +45,7 @@ function ProductCard({ product, onOpen }) {
 function ProductModal({ product, onClose }) {
   const [showVersions, setShowVersions] = useState(false);
   const [versionImageIndex, setVersionImageIndex] = useState(0);
+  const [flavorImageIndex, setFlavorImageIndex] = useState(0);
   useEffect(() => {
     if (!product) return;
     const closeOnEscape = (event) => event.key === 'Escape' && onClose();
@@ -52,9 +53,25 @@ function ProductModal({ product, onClose }) {
     document.body.style.overflow = 'hidden';
     return () => { document.removeEventListener('keydown', closeOnEscape); document.body.style.overflow = ''; };
   }, [product, onClose]);
-  useEffect(() => { setShowVersions(false); setVersionImageIndex(0); }, [product]);
+  useEffect(() => { setShowVersions(false); setVersionImageIndex(0); setFlavorImageIndex(0); }, [product]);
   if (!product) return null;
   const presentations = Array.isArray(product.presentations) ? product.presentations : [];
+  const flavorImages = [];
+  const addFlavorImage = (value, caption) => {
+    const src = typeof value === 'string' ? value : value?.url || value?.src || value?.image || value?.path || '';
+    if (src && !flavorImages.some(image => image.src === src)) flavorImages.push({ src, caption: caption || value?.description || value?.caption || product.name });
+  };
+  addFlavorImage(product.image, product.name);
+  (Array.isArray(product.images) ? product.images : []).forEach(image => addFlavorImage(image, image?.description || product.name));
+  presentations.forEach(presentation => {
+    addFlavorImage(presentation.image, presentation.name);
+    (presentation.images || []).forEach(image => addFlavorImage(image, presentation.name));
+    (presentation.sizes || []).forEach(size => {
+      addFlavorImage(size.image, presentation.name + ' · ' + size.name);
+      (size.images || []).forEach(image => addFlavorImage(image, presentation.name + ' · ' + size.name));
+    });
+  });
+  const currentFlavorImage = flavorImages.length ? flavorImages[flavorImageIndex % flavorImages.length] : null;
   const versionImages = presentations.flatMap((presentation) => {
     const key = presentation.key || presentation.name;
     const images = [];
@@ -97,7 +114,13 @@ function ProductModal({ product, onClose }) {
         <a className="modal-open-page" href={productUrl} target="_blank" rel="noopener noreferrer" aria-label="Abrir ficha completa em outra página" title="Abrir em outra página"><ArrowUpRight size={20} /></a>
         <button className="modal-close" onClick={onClose} aria-label="Fechar detalhes"><X /></button>
       </div>
-      <div className={`modal-art art-${product.tone}`}><img className="modal-real-image" src={product.image} alt={`Pudim de ${product.name}`} /></div>
+      <div className={`modal-art art-${product.tone}`}>
+        <div className="modal-flavor-carousel">
+          <button type="button" onClick={() => setFlavorImageIndex(index => (index - 1 + flavorImages.length) % flavorImages.length)} aria-label="Imagem anterior" disabled={flavorImages.length < 2}><ArrowLeft size={19}/></button>
+          {currentFlavorImage && <figure><img className="modal-real-image" src={currentFlavorImage.src} alt={currentFlavorImage.caption}/><figcaption>{currentFlavorImage.caption}</figcaption></figure>}
+          <button type="button" onClick={() => setFlavorImageIndex(index => (index + 1) % flavorImages.length)} aria-label="Próxima imagem" disabled={flavorImages.length < 2}><ArrowRight size={19}/></button>
+        </div>
+      </div>
       <div className="modal-copy">
         <span className="eyebrow">SABOR {product.number} · LM PUDINS</span>
         <h2 id="modal-title">{product.name}</h2>
