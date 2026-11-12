@@ -533,6 +533,10 @@ async function initDb() {
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
   await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS destination TEXT NOT NULL DEFAULT 'geral'`);
+  await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS version_name TEXT NOT NULL DEFAULT ''`);
+  await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS version_description TEXT NOT NULL DEFAULT ''`);
+  await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS version_sizes JSONB NOT NULL DEFAULT '[]'::jsonb`);
+  await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS is_primary BOOLEAN NOT NULL DEFAULT FALSE`);
 
   await pool.query(`CREATE TABLE IF NOT EXISTS admin_users (
     id BIGSERIAL PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
@@ -663,11 +667,16 @@ app.post('/api/integrations/products/:integrationId/nutrition', integrationRateL
 app.get('/api/gallery', async (_req,res) => { const result=await pool.query('SELECT id,url,description,category,destination FROM media_library WHERE active=TRUE ORDER BY id DESC'); res.json(result.rows); });
 app.get('/api/admin/gallery', isAdmin, async (_req,res) => { const result=await pool.query('SELECT * FROM media_library ORDER BY id DESC'); res.json(result.rows); });
 app.post('/api/admin/gallery', isAdmin, async (req,res) => {
-  const {url,description,category,destination}=req.body||{};
+  const {url,description,category,destination,version_name,version_description,version_sizes,is_primary}=req.body||{};
   if(!url) return res.status(400).json({error:'Envie uma imagem antes de salvar.'});
   const mediaDestination=['geral','versoes'].includes(destination)?destination:'geral';
-  const result=await pool.query('INSERT INTO media_library(url,description,category,destination) VALUES($1,$2,$3,$4) RETURNING *',[url,String(description||''),String(category||'Institucional'),mediaDestination]);
-  res.status(201).json(result.rows[0]);
+  if(mediaDestination==='versoes'&&!String(version_name||'').trim()) return res.status(400).json({error:'Informe a versão/apresentação da imagem.'});
+  const sizes=Array.isArray(version_sizes)?version_sizes:[];
+  const client=await pool.connect();
+  try{await client.query('BEGIN');if(mediaDestination==='versoes'&&is_primary)await client.query('UPDATE media_library SET is_primary=FALSE WHERE LOWER(version_name)=LOWER($1)',[String(version_name).trim()]);
+    const result=await client.query('INSERT INTO media_library(url,description,category,destination,version_name,version_description,version_sizes,is_primary) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8) RETURNING *',[url,String(description||''),String(category||'Institucional'),mediaDestination,mediaDestination==='versoes'?String(version_name).trim():'',mediaDestination==='versoes'?String(version_description||''):'',JSON.stringify(mediaDestination==='versoes'?sizes:[]),mediaDestination==='versoes'&&Boolean(is_primary)]);
+    await client.query('COMMIT');res.status(201).json(result.rows[0]);
+  }catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
 });
 app.delete('/api/admin/gallery/:id', isAdmin, async (req,res) => { const result=await pool.query('DELETE FROM media_library WHERE id=$1 RETURNING id',[req.params.id]); if(!result.rowCount)return res.status(404).json({error:'Imagem não encontrada.'}); res.status(204).end(); });
 app.get('/api/products', async (_req,res) => {
