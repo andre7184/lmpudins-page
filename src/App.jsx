@@ -127,7 +127,7 @@ function ProductModal({ product, onClose }) {
         <p>{product.description}</p>
         <div className="ingredient-block"><span>INGREDIENTES DO CATÁLOGO</span><p>{product.ingredients}</p></div>
         <section className="modal-versions">
-          <a className="button button-quiet modal-versions-toggle" href="#versoes" onClick={onClose}>Conhecer versões <ArrowRight size={16} /></a>
+          <a className="button button-quiet modal-versions-toggle" href="#versoes" onClick={(event)=>{event.preventDefault();onClose();window.location.hash='versoes';document.getElementById('versoes')?.scrollIntoView({behavior:'smooth',block:'start'});}}>Conhecer versões <ArrowRight size={16} /></a>
           {showVersions && <div className="modal-versions-content">
             <span className="eyebrow">APRESENTAÇÕES DE {product.name.toUpperCase()}</span>
             <h3>O mesmo sabor, diferentes experiências.</h3>
@@ -165,6 +165,7 @@ function App() {
     const [galleryIndex, setGalleryIndex] = useState(0);
   const [versionsGalleryIndex, setVersionsGalleryIndex] = useState(0);
   const [independentGallery, setIndependentGallery] = useState([]);
+  const [catalogVersions, setCatalogVersions] = useState([]);
   const filters = ['Todos', 'Frutados', 'Intensos', 'Cremosos'];
   useEffect(() => {
     let cancelled = false;
@@ -178,6 +179,7 @@ function App() {
     return () => { cancelled = true; };
   }, []);
   useEffect(() => { fetch('/api/gallery').then(r=>r.ok?r.json():[]).then(items=>setIndependentGallery(Array.isArray(items)?items:[])).catch(()=>{}); }, []);
+  useEffect(() => { fetch('/api/versions').then(r=>r.ok?r.json():[]).then(items=>setCatalogVersions(Array.isArray(items)?items:[])).catch(()=>{}); }, []);
   useEffect(() => {
     if (window.location.hash === '#versoes') {
       window.requestAnimationFrame(() => document.getElementById('versoes')?.scrollIntoView({ block: 'start' }));
@@ -220,15 +222,10 @@ function App() {
   });
   const galleryItems = [...independentGallery.map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins',product:null,key:'library-'+item.id})), ...productGalleryItems];
   const versionsGalleryItems = [
+    ...catalogVersions.flatMap(version=>[version.image,version.detail_image,...(Array.isArray(version.gallery_images)?version.gallery_images:[])].filter(Boolean).map((src,index)=>({src,caption:version.name+' · '+(index===0?'Imagem principal':index===1?'Detalhe':'Galeria'),product:null,key:'version-'+version.id+'-'+index}))),
     ...independentGallery.filter(item=>item.destination==='versoes').map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins · Versões',product:null,key:'library-version-'+item.id})),
     ...productVersionGalleryItems
   ].filter((item,index,all)=>all.findIndex(candidate=>candidate.src===item.src)===index);
-  const versionShowcases = independentGallery.filter(item=>item.destination==='versoes' && item.version_name).reduce((groups,item)=>{
-    const key=String(item.version_name).trim().toLocaleLowerCase('pt-BR');
-    if(!groups[key])groups[key]={name:item.version_name,description:item.version_description||'',sizes:Array.isArray(item.version_sizes)?item.version_sizes:[],images:[]};
-    groups[key].images.push(item);if(!groups[key].description&&item.version_description)groups[key].description=item.version_description;if(!groups[key].sizes.length&&Array.isArray(item.version_sizes))groups[key].sizes=item.version_sizes;return groups;
-  },{});
-  const versionShowcaseList=Object.values(versionShowcases).map(version=>{const primary=version.images.find(image=>image.is_primary)||version.images[0];return {...version,primary,secondary:version.images.find(image=>image.id!==primary.id)||null};});
   const moveGallery = (step) => setGalleryIndex((current) => galleryItems.length ? (current + step + galleryItems.length) % galleryItems.length : 0);
   const moveVersionsGallery = (step) => setVersionsGalleryIndex((current) => versionsGalleryItems.length ? (current + step + versionsGalleryItems.length) % versionsGalleryItems.length : 0);
   const visibleGalleryItem = galleryItems.length ? galleryItems[galleryIndex % galleryItems.length] : null;
@@ -298,18 +295,18 @@ function App() {
       </section>
 
       <section className="versions-section" id="versoes">
-        <div className="versions-section-heading"><span className="eyebrow eyebrow-gold">COLEÇÃO LM PUDINS</span><h2>Nossas <em>versões</em></h2><p>Conheça os formatos e apresentações da LM Pudins, com detalhes de cada versão e os tamanhos disponíveis.</p></div>
+        <div className="versions-section-heading"><span className="eyebrow eyebrow-gold">COLEÇÃO LM PUDINS</span><h2>Nossas <em>versões</em></h2><p>Conheça cada formato de apresentação e escolha o tamanho ideal para cada ocasião.</p></div>
         <div className="version-catalog">
-          {versionShowcaseList.map(version=><article className="version-catalog-card" key={version.name}>
-            <div className="version-catalog-panel version-catalog-type">{version.primary?.url&&<img src={version.primary.url} alt={version.primary.description||version.name} loading="lazy"/>}<div><span className="eyebrow">TIPO DE APRESENTAÇÃO</span><h3>{version.name}</h3></div></div>
-            <div className="version-catalog-panel version-catalog-details">{version.secondary?.url&&<img src={version.secondary.url} alt={version.secondary.description||version.name+' em detalhe'} loading="lazy"/>}<div><span className="eyebrow">CONHEÇA ESTA VERSÃO</span><p>{version.description||version.secondary?.description||version.primary?.description||'Conheça os detalhes desta apresentação LM Pudins.'}</p></div>
-              {version.sizes.length>0&&<div className="version-size-grid">{version.sizes.slice(0,4).map((size,index)=><div className="version-size-item" key={size.name||index}><strong>{size.name||'Tamanho '+(index+1)}</strong>{size.description&&<p>{size.description}</p>}{size.bestUse&&<small><b>Ideal para:</b> {size.bestUse}</small>}</div>)}</div>}
+          {catalogVersions.map(version=><article className="version-catalog-card" key={version.id}>
+            <div className="version-catalog-panel version-catalog-type">{version.image&&<img src={version.image} alt={version.name} loading="lazy"/>}<div><span className="eyebrow">TIPO DE APRESENTAÇÃO</span><h3>{version.name}</h3>{version.short_description&&<p>{version.short_description}</p>}</div></div>
+            <div className="version-catalog-panel version-catalog-details">{version.detail_image&&<img src={version.detail_image} alt={version.name+' · detalhe da apresentação'} loading="lazy"/>}<div><span className="eyebrow">CONHEÇA ESTA VERSÃO</span><p>{version.description||version.short_description}</p></div>
+              {Array.isArray(version.sizes)&&version.sizes.length>0&&<div className="version-size-grid">{version.sizes.map((size,index)=><div className="version-size-item" key={size.id||size.name||index}><strong>{size.name}</strong>{size.description&&<p>{size.description}</p>}{size.bestUse&&<small><b>Ideal para:</b> {size.bestUse}</small>}</div>)}</div>}
             </div>
           </article>)}
-          {!versionShowcaseList.length&&<p className="gallery-empty">As versões serão apresentadas aqui assim que forem cadastradas na biblioteca do Admin.</p>}
+          {!catalogVersions.length&&<p className="gallery-empty">As versões serão apresentadas aqui assim que forem cadastradas no painel administrativo.</p>}
         </div>
-        <div className="versions-showcase"><div className="versions-showcase-copy"><span className="eyebrow">GALERIA DE VERSÕES</span><h3>Veja cada detalhe<br/><em>de perto.</em></h3><p>Explore todas as imagens cadastradas das apresentações e versões da LM Pudins.</p></div>
-          <div className="versions-showcase-carousel"><button type="button" className="gallery-arrow" onClick={() => moveVersionsGallery(-1)} aria-label="Imagem anterior" disabled={versionsGalleryItems.length < 2}><ArrowLeft size={20}/></button>{visibleVersionGalleryItem ? <figure><img src={visibleVersionGalleryItem.src} alt={visibleVersionGalleryItem.caption}/><figcaption>{visibleVersionGalleryItem.caption}</figcaption></figure> : <p className="gallery-empty">As imagens serão exibidas aqui quando forem cadastradas.</p>}<button type="button" className="gallery-arrow" onClick={() => moveVersionsGallery(1)} aria-label="Próxima imagem" disabled={versionsGalleryItems.length < 2}><ArrowRight size={20}/></button></div>
+        <div className="versions-showcase"><div className="versions-showcase-copy"><span className="eyebrow">GALERIA DE VERSÕES</span><h3>Veja cada detalhe<br/><em>de perto.</em></h3><p>Explore as imagens das diferentes apresentações da LM Pudins.</p></div>
+          <div className="versions-showcase-carousel"><button type="button" className="gallery-arrow" onClick={() => moveVersionsGallery(-1)} aria-label="Imagem anterior" disabled={versionsGalleryItems.length < 2}><ArrowLeft size={20}/></button>{visibleVersionGalleryItem ? <figure><img src={visibleVersionGalleryItem.src} alt={visibleVersionGalleryItem.caption}/><figcaption>{visibleVersionGalleryItem.caption}</figcaption></figure> : <p className="gallery-empty">As imagens das versões aparecerão aqui.</p>}<button type="button" className="gallery-arrow" onClick={() => moveVersionsGallery(1)} aria-label="Próxima imagem" disabled={versionsGalleryItems.length < 2}><ArrowRight size={20}/></button></div>
         </div>
       </section>
 
