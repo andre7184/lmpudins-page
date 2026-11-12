@@ -148,7 +148,7 @@ function App() {
       <div className="header-inner"><Logo />
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuOpen}>{menuOpen ? <X /> : <Menu />}</button>
         <nav className={menuOpen ? 'nav nav-open' : 'nav'} aria-label="Navegação principal">
-          <a href="#inicio" onClick={closeMenu}>Início</a><a href="#sabores" onClick={closeMenu}>Sabores</a><a href="#quem-somos" onClick={closeMenu}>Quem somos</a><a href="#galeria" onClick={closeMenu}>Galeria</a><a href="#contato" onClick={closeMenu}>Contato</a>
+          <a href="#inicio" onClick={closeMenu}>Início</a><a href="#sabores" onClick={closeMenu}>Sabores</a><a href="/versoes" onClick={closeMenu}>Nossas versões</a><a href="#quem-somos" onClick={closeMenu}>Quem somos</a><a href="#galeria" onClick={closeMenu}>Galeria</a><a href="#contato" onClick={closeMenu}>Contato</a>
           <a className="nav-cta" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>Peça pelo iFood <ArrowUpRight size={15} /></a>
         </nav>
       </div>
