@@ -180,6 +180,11 @@ function App() {
     return () => { cancelled = true; };
   }, []);
   useEffect(() => { fetch('/api/gallery').then(r=>r.ok?r.json():[]).then(items=>setIndependentGallery(Array.isArray(items)?items:[])).catch(()=>{}); }, []);
+  useEffect(() => {
+    if (window.location.hash === '#versoes') {
+      window.requestAnimationFrame(() => document.getElementById('versoes')?.scrollIntoView({ block: 'start' }));
+    }
+  }, []);
   const productGalleryItems = catalogProducts.flatMap((product) => {
     const items = [];
     const add = (value, caption, key) => {
