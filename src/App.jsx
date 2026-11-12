@@ -93,76 +93,6 @@ function ProductModal({ product, onClose }) {
   </div>;
 }
 
-function IntegrationModal({ open, onClose }) {
-  const [authenticated,setAuthenticated] = useState(false);
-  const [credentials,setCredentials] = useState(null);
-  const [username,setUsername] = useState('');
-  const [password,setPassword] = useState('');
-  const [loading,setLoading] = useState(false);
-  const [error,setError] = useState('');
-  const [showKey,setShowKey] = useState(false);
-  const loadCredentials = async () => {
-    const response = await fetch('/api/admin/integration',{credentials:'same-origin',cache:'no-store'});
-    const data = await response.json().catch(()=>({error:'Resposta inválida do servidor.'}));
-    if (!response.ok) throw new Error(data.error || 'Não foi possível carregar os dados da integração.');
-    setCredentials(data);
-  };
-  useEffect(() => {
-    if (!open) return;
-    let active = true;
-    setAuthenticated(false);setCredentials(null);setError('');setShowKey(false);setLoading(true);
-    (async () => {
-      try {
-        const response = await fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'});
-        if (!response.ok) return;
-        if (active) { setAuthenticated(true); await loadCredentials(); }
-      } catch (err) { if (active) setError(err.message); }
-      finally { if (active) setLoading(false); }
-    })();
-    return () => { active = false; };
-  },[open]);
-  const submitLogin = async (event) => {
-    event.preventDefault();setLoading(true);setError('');
-    try {
-      const response = await fetch('/api/auth/login',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
-      const data = await response.json().catch(()=>({error:'Resposta inválida do servidor.'}));
-      if (!response.ok) throw new Error(data.error || 'Falha na autenticação.');
-      setPassword('');setAuthenticated(true);await loadCredentials();
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
-  };
-  const copy = async (value,label) => {
-    try { await navigator.clipboard.writeText(value);setError(label+' copiada.'); }
-    catch { setError('Não foi possível copiar automaticamente. Selecione o conteúdo e copie manualmente.'); }
-  };
-  if (!open) return null;
-  const apiUrl = credentials?.apiUrl || window.location.origin + '/api/integrations/products';
-  return <div className="integration-backdrop" role="presentation" onMouseDown={(event)=>event.target===event.currentTarget&&onClose()}>
-    <section className="integration-dialog" role="dialog" aria-modal="true" aria-labelledby="integration-title">
-      <button className="integration-close" onClick={onClose} aria-label="Fechar integração"><X/></button>
-      <span className="eyebrow eyebrow-gold">CONEXÃO ENTRE SISTEMAS</span>
-      <h2 id="integration-title">API LM Pudins</h2>
-      <p>Use estes dados no sistema de receitas e produção para enviar a tabela nutricional ao catálogo público.</p>
-      <div className="integration-field"><label>URL base da API</label><code>{apiUrl}</code><button type="button" className="button button-quiet" onClick={()=>copy(apiUrl,'URL')}>Copiar URL</button></div>
-      {!authenticated ? <form className="integration-login" onSubmit={submitLogin}>
-        <strong>Autenticação administrativa</strong>
-        <p>A chave secreta só é exibida após entrar com seu acesso de administrador.</p>
-        <label>Usuário<input value={username} onChange={e=>setUsername(e.target.value)} autoComplete="username" required/></label>
-        <label>Senha<input type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password" required/></label>
-        <button className="button button-gold" type="submit" disabled={loading}>{loading?'Verificando…':'Entrar e visualizar chave'}</button>
-      </form> : credentials && <div className="integration-field">
-        <label>Senha / chave da API</label>
-        <div className="integration-secret"><code>{showKey?credentials.apiKey:'•'.repeat(24)}</code><button type="button" onClick={()=>setShowKey(v=>!v)}>{showKey?'Ocultar':'Mostrar'}</button></div>
-        <button type="button" className="button button-quiet" onClick={()=>copy(credentials.apiKey,'Chave')}>Copiar chave</button>
-        <div className="integration-instructions"><strong>Como enviar</strong><p>Método: POST</p><p>Endereço: {apiUrl}/{'{ID_DO_PRODUTO}'}/nutrition</p><p>Cabeçalho: <code>X-LM-API-Key</code> com a chave acima.</p><p>Corpo JSON: <code>{'{"nutrition":{"porcao":"140 g","nutrientes":[["Valor energético","220 kcal = 924 kJ","11%"]]}}'}</code></p></div>
-      </div>}
-      {loading && <p className="integration-feedback">Carregando dados da integração…</p>}
-      {error && <p className="integration-feedback" role="status">{error}</p>}
-      <small className="integration-security">Não compartilhe a chave. Ela permite atualizar as informações nutricionais dos produtos.</small>
-    </section>
-  </div>;
-}
-
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [catalogProducts, setCatalogProducts] = useState(fallbackProducts);
@@ -171,7 +101,6 @@ function App() {
   const [scrolled, setScrolled] = useState(false);
     const [galleryIndex, setGalleryIndex] = useState(0);
   const [independentGallery, setIndependentGallery] = useState([]);
-  const [integrationOpen, setIntegrationOpen] = useState(false);
   const filters = ['Todos', 'Frutados', 'Intensos', 'Cremosos'];
   useEffect(() => {
     let cancelled = false;
@@ -291,10 +220,9 @@ function App() {
       </section>
     </main>
 
-    <footer className="site-footer"><div className="footer-top"><Logo compact /><p>LM Pudins<br />A sobremesa perfeita para adoçar sua vida!</p><div className="footer-actions"><button className="footer-integration" type="button" onClick={()=>setIntegrationOpen(true)}>Integração API</button><a className="footer-back" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer">Peça pelo iFood ↗</a></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><MessageCircle size={16}/></a><a href="https://www.instagram.com/lmpudinsgourmet/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={16}/></a><a href="https://www.youtube.com/@LMPudins" target="_blank" rel="noopener noreferrer" aria-label="YouTube">▶</a><a href="mailto:lmpudins@gmail.com" aria-label="E-mail">✉</a></span></div></footer>
+    <footer className="site-footer"><div className="footer-top"><Logo compact /><p>LM Pudins<br />A sobremesa perfeita para adoçar sua vida!</p><a className="footer-back" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer">Peça pelo iFood ↗</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><MessageCircle size={16}/></a><a href="https://www.instagram.com/lmpudinsgourmet/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={16}/></a><a href="https://www.youtube.com/@LMPudins" target="_blank" rel="noopener noreferrer" aria-label="YouTube">▶</a><a href="mailto:lmpudins@gmail.com" aria-label="E-mail">✉</a></span></div></footer>
     <a className="whatsapp-float" href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="Fale com a LM Pudins pelo WhatsApp"><MessageCircle size={27}/><span>Fale conosco</span></a>
     <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
-    <IntegrationModal open={integrationOpen} onClose={()=>setIntegrationOpen(false)} />
   </>;
 }
 
