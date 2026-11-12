@@ -537,6 +537,15 @@ async function initDb() {
   await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS version_description TEXT NOT NULL DEFAULT ''`);
   await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS version_sizes JSONB NOT NULL DEFAULT '[]'::jsonb`);
   await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS is_primary BOOLEAN NOT NULL DEFAULT FALSE`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS product_versions (
+    id BIGSERIAL PRIMARY KEY, slug TEXT UNIQUE NOT NULL, name TEXT NOT NULL,
+    short_description TEXT NOT NULL DEFAULT '', description TEXT NOT NULL DEFAULT '',
+    image TEXT NOT NULL DEFAULT '', detail_image TEXT NOT NULL DEFAULT '',
+    gallery_images JSONB NOT NULL DEFAULT '[]'::jsonb, sizes JSONB NOT NULL DEFAULT '[]'::jsonb,
+    active BOOLEAN NOT NULL DEFAULT TRUE, sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_product_versions_active_order ON product_versions(active,sort_order,id)`);
 
   await pool.query(`CREATE TABLE IF NOT EXISTS admin_users (
     id BIGSERIAL PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
@@ -679,6 +688,17 @@ app.post('/api/admin/gallery', isAdmin, async (req,res) => {
   }catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
 });
 app.delete('/api/admin/gallery/:id', isAdmin, async (req,res) => { const result=await pool.query('DELETE FROM media_library WHERE id=$1 RETURNING id',[req.params.id]); if(!result.rowCount)return res.status(404).json({error:'Imagem não encontrada.'}); res.status(204).end(); });
+app.get('/api/versions', async (_req,res) => { const result=await pool.query('SELECT * FROM product_versions WHERE active=TRUE ORDER BY sort_order,id'); res.json(result.rows); });
+app.get('/api/admin/versions', isAdmin, async (_req,res) => { const result=await pool.query('SELECT * FROM product_versions ORDER BY sort_order,id'); res.json(result.rows); });
+app.post('/api/admin/versions', isAdmin, async (req,res) => {
+ const v=req.body||{};if(!String(v.slug||'').match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)||!String(v.name||'').trim())return res.status(400).json({error:'Informe nome e identificador válido.'});
+ try{const r=await pool.query('INSERT INTO product_versions(slug,name,short_description,description,image,detail_image,gallery_images,sizes,active,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9,$10) RETURNING *',[v.slug,v.name.trim(),v.short_description||'',v.description||'',v.image||'',v.detail_image||'',JSON.stringify(Array.isArray(v.gallery_images)?v.gallery_images:[]),JSON.stringify(Array.isArray(v.sizes)?v.sizes:[]),v.active!==false,Number(v.sort_order)||0]);res.status(201).json(r.rows[0]);}catch(e){if(e.code==='23505')return res.status(409).json({error:'Já existe uma versão com esse identificador.'});throw e}
+});
+app.put('/api/admin/versions/:id', isAdmin, async (req,res) => {
+ const v=req.body||{};if(!String(v.slug||'').match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)||!String(v.name||'').trim())return res.status(400).json({error:'Informe nome e identificador válido.'});
+ try{const r=await pool.query('UPDATE product_versions SET slug=$1,name=$2,short_description=$3,description=$4,image=$5,detail_image=$6,gallery_images=$7::jsonb,sizes=$8::jsonb,active=$9,sort_order=$10,updated_at=NOW() WHERE id=$11 RETURNING *',[v.slug,v.name.trim(),v.short_description||'',v.description||'',v.image||'',v.detail_image||'',JSON.stringify(Array.isArray(v.gallery_images)?v.gallery_images:[]),JSON.stringify(Array.isArray(v.sizes)?v.sizes:[]),v.active!==false,Number(v.sort_order)||0,req.params.id]);if(!r.rowCount)return res.status(404).json({error:'Versão não encontrada.'});res.json(r.rows[0]);}catch(e){if(e.code==='23505')return res.status(409).json({error:'Já existe uma versão com esse identificador.'});throw e}
+});
+app.delete('/api/admin/versions/:id', isAdmin, async (req,res) => {const r=await pool.query('DELETE FROM product_versions WHERE id=$1 RETURNING id',[req.params.id]);if(!r.rowCount)return res.status(404).json({error:'Versão não encontrada.'});res.status(204).end();});
 app.get('/api/products', async (_req,res) => {
   const result = await pool.query('SELECT * FROM products WHERE active=TRUE ORDER BY sort_order, id');
   res.json(result.rows.map(publicProduct));
