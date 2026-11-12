@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - admin-catalogo-produtos
+      - versao_0-5
   pull_request:
     branches:
       - main
       - admin-catalogo-produtos
+      - versao_0-5
 
 permissions:
   contents: read
