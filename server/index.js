@@ -664,7 +664,7 @@ app.post('/api/integrations/products/:integrationId/nutrition', integrationRateL
   if (!result.rowCount) return res.status(404).json({error:'Produto não encontrado para o ID de integração informado.'});
   res.json({success:true,message:'Tabela nutricional atualizada.',product:result.rows[0]});
 });
-app.get('/api/gallery', async (_req,res) => { const result=await pool.query('SELECT id,url,description,category,destination FROM media_library WHERE active=TRUE ORDER BY id DESC'); res.json(result.rows); });
+app.get('/api/gallery', async (_req,res) => { const result=await pool.query('SELECT id,url,description,category,destination,version_name,version_description,version_sizes,is_primary FROM media_library WHERE active=TRUE ORDER BY id DESC'); res.json(result.rows); });
 app.get('/api/admin/gallery', isAdmin, async (_req,res) => { const result=await pool.query('SELECT * FROM media_library ORDER BY id DESC'); res.json(result.rows); });
 app.post('/api/admin/gallery', isAdmin, async (req,res) => {
   const {url,description,category,destination,version_name,version_description,version_sizes,is_primary}=req.body||{};
