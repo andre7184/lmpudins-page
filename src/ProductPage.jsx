@@ -112,6 +112,7 @@ export default function ProductPage() {
         <h2>Um sabor para <em>guardar na memória.</em></h2>
         <p style={styles.description}>{product.description || product.short_description || 'Uma experiência especial da coleção LM Pudins.'}</p>
       </section>
+      <div style={styles.versionsCta}><a href={'/versoes?produto='+encodeURIComponent(product.slug)} style={styles.cta}>Conhecer versões <ArrowUpRight size={17}/></a></div>
       {Array.isArray(product.presentations) && product.presentations.length > 0 && <section style={styles.presentationsSection}>
         <p style={styles.sectionEyebrow}>NOSSAS VERSÕES</p><h2 style={styles.presentationsTitle}>O mesmo sabor, diferentes <em>experiências.</em></h2>
         <div style={styles.presentationGrid}>{product.presentations.map((presentation) => <article key={presentation.key || presentation.name} style={styles.presentationCard}>
@@ -194,6 +195,7 @@ const styles = {
   dot:{width:8,height:8,borderRadius:20,border:0,background:'#8e7375',cursor:'pointer',padding:0},
   dotActive:{width:25,background:'#e5c780'},
   details:{maxWidth:1000,margin:'58px auto 0'},
+  versionsCta:{display:'flex',justifyContent:'center',margin:'28px 0 8px'},
   presentationsSection:{margin:'42px 0',padding:'34px 0',borderTop:'1px solid #65434c',borderBottom:'1px solid #65434c'},
   presentationsTitle:{fontFamily:'Georgia,serif',fontWeight:400,fontSize:'clamp(28px,4vw,42px)',textAlign:'center',margin:'8px 0 28px'},
   presentationGrid:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:18},
