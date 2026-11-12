@@ -619,7 +619,7 @@ app.get('/api/auth/me', (req,res) => req.session?.adminId ? res.json({user:{user
 app.get('/api/admin/integration', isAdmin, async (_req,res) => {
   const result = await pool.query('SELECT api_key FROM api_integration_settings WHERE id=1');
   if (!result.rowCount) return res.status(503).json({error:'A integração ainda não foi inicializada.'});
-  const publicBaseUrl = String(process.env.PUBLIC_SITE_URL || 'https://www.lmpudins.com.br').replace(/\\/+$/, '');
+  const publicBaseUrl = String(process.env.PUBLIC_SITE_URL || 'https://www.lmpudins.com.br').replace(/\/+$/, '');
   res.json({apiUrl: publicBaseUrl + '/api/integrations/products', apiKey: result.rows[0].api_key, headerName:'X-LM-API-Key'});
 });
 app.post('/api/auth/logout', (req,res) => req.session.destroy(() => {res.clearCookie('lm_admin_session');res.status(204).end();}));
