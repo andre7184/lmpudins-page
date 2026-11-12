@@ -538,6 +538,16 @@ async function initDb() {
   await pool.query(`CREATE TABLE IF NOT EXISTS catalog_seed_versions (
     version TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
+  const defaultPresentations = [
+    { key:'copo', name:'Copo americano', sizes:[{ name:'150 g', nominalWeightG:150, finalWeightG:140, components:{ carameloG:{min:20,max:25}, massaG:115, geleiaG:{min:20,max:25} } }] },
+    { key:'forminha', name:'Forminha', sizes:[
+      { name:'Mini', nominalWeightG:80, finalWeightG:null, components:{ carameloG:10, massaG:75, geleiaG:20 } },
+      { name:'Pequeno', nominalWeightG:120, finalWeightG:null, components:{ carameloG:15, massaG:110, geleiaG:30 } },
+      { name:'Médio', nominalWeightG:380, finalWeightG:null, components:{ carameloG:40, massaG:380, geleiaG:80 } },
+      { name:'Grande', nominalWeightG:800, finalWeightG:null, components:{ carameloG:80, massaG:800, geleiaG:160 } }
+    ] }
+  ];
+  const emptyComponents = { massa:{ ingredients:[], nutritionPer100g:{} }, caramelo:{ ingredients:[], nutritionPer100g:{} }, geleia:{ ingredients:[], nutritionPer100g:{} } };
   // Reinsere apenas produtos-padrão ausentes, sem sobrescrever edições feitas pelo admin.
   for (const p of initialProducts) {
     await pool.query(`INSERT INTO products (slug,name,short_description,description,ingredients,image,category,sort_order,nutrition)
@@ -545,6 +555,9 @@ async function initDb() {
       ON CONFLICT (slug) DO NOTHING`,
       [p.slug,p.name,p.short_description,p.description,p.ingredients,p.image,p.category,p.sort_order,JSON.stringify(p.nutrition)]);
   }
+  // Disponibiliza os modelos de apresentação para os sabores existentes sem sobrescrever configurações do admin.
+  await pool.query("UPDATE products SET presentations=$1::jsonb WHERE presentations='[]'::jsonb", [JSON.stringify(defaultPresentations)]);
+  await pool.query("UPDATE products SET components=$1::jsonb WHERE components='{}'::jsonb", [JSON.stringify(emptyComponents)]);
   const seedVersion = 'catalogo-nutricional-2026-10-v1';
   await pool.query('INSERT INTO catalog_seed_versions (version) VALUES ($1) ON CONFLICT DO NOTHING', [seedVersion]);
   if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
