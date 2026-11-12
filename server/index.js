@@ -7,7 +7,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import multer from 'multer';
 import { mkdirSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 
 const { Pool } = pg;
 const app = express();
@@ -526,6 +526,7 @@ async function initDb() {
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS images JSONB NOT NULL DEFAULT '[]'::jsonb`);
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS presentations JSONB NOT NULL DEFAULT '[]'::jsonb`);
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS components JSONB NOT NULL DEFAULT '{}'::jsonb`);
+  await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS integration_id TEXT`);
   await pool.query(`CREATE TABLE IF NOT EXISTS media_library (
     id BIGSERIAL PRIMARY KEY, url TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
     category TEXT NOT NULL DEFAULT 'Institucional', active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -534,6 +535,10 @@ async function initDb() {
   await pool.query(`CREATE TABLE IF NOT EXISTS admin_users (
     id BIGSERIAL PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS api_integration_settings (
+    id SMALLINT PRIMARY KEY CHECK (id = 1), api_key TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
   await pool.query(`CREATE TABLE IF NOT EXISTS catalog_seed_versions (
     version TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -550,14 +555,21 @@ async function initDb() {
   const emptyComponents = { massa:{ ingredients:[], nutritionPer100g:{} }, caramelo:{ ingredients:[], nutritionPer100g:{} }, geleia:{ ingredients:[], nutritionPer100g:{} } };
   // Reinsere apenas produtos-padrão ausentes, sem sobrescrever edições feitas pelo admin.
   for (const p of initialProducts) {
-    await pool.query(`INSERT INTO products (slug,name,short_description,description,ingredients,image,category,sort_order,nutrition)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)
+    await pool.query(`INSERT INTO products (slug,name,short_description,description,ingredients,image,category,sort_order,nutrition,integration_id)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10)
       ON CONFLICT (slug) DO NOTHING`,
-      [p.slug,p.name,p.short_description,p.description,p.ingredients,p.image,p.category,p.sort_order,JSON.stringify(p.nutrition)]);
+      [p.slug,p.name,p.short_description,p.description,p.ingredients,p.image,p.category,p.sort_order,JSON.stringify(p.nutrition),randomUUID()]);
   }
   // Disponibiliza os modelos de apresentação para os sabores existentes sem sobrescrever configurações do admin.
   await pool.query("UPDATE products SET presentations=$1::jsonb WHERE presentations='[]'::jsonb", [JSON.stringify(defaultPresentations)]);
   await pool.query("UPDATE products SET components=$1::jsonb WHERE components='{}'::jsonb", [JSON.stringify(emptyComponents)]);
+  const productsWithoutIntegrationId = await pool.query("SELECT id FROM products WHERE integration_id IS NULL OR integration_id = ''");
+  for (const product of productsWithoutIntegrationId.rows) {
+    await pool.query('UPDATE products SET integration_id=$1 WHERE id=$2', [randomUUID(), product.id]);
+  }
+  await pool.query('ALTER TABLE products ALTER COLUMN integration_id SET NOT NULL');
+  await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS products_integration_id_uidx ON products(integration_id)');
+  await pool.query(`INSERT INTO api_integration_settings (id,api_key) VALUES (1,$1) ON CONFLICT (id) DO NOTHING`, [randomBytes(32).toString('hex')]);
   const seedVersion = 'catalogo-nutricional-2026-10-v1';
   await pool.query('INSERT INTO catalog_seed_versions (version) VALUES ($1) ON CONFLICT DO NOTHING', [seedVersion]);
   if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
@@ -604,7 +616,30 @@ app.post('/api/auth/login', rateLimit({windowMs:15*60*1000, limit:10, standardHe
   });
 });
 app.get('/api/auth/me', (req,res) => req.session?.adminId ? res.json({user:{username:req.session.username}}) : res.status(401).json({error:'Não autenticado.'}));
+app.get('/api/admin/integration', isAdmin, async (_req,res) => {
+  const result = await pool.query('SELECT api_key FROM api_integration_settings WHERE id=1');
+  if (!result.rowCount) return res.status(503).json({error:'A integração ainda não foi inicializada.'});
+  const publicBaseUrl = String(process.env.PUBLIC_SITE_URL || 'https://www.lmpudins.com.br').replace(/\\/+$/, '');
+  res.json({apiUrl: publicBaseUrl + '/api/integrations/products', apiKey: result.rows[0].api_key, headerName:'X-LM-API-Key'});
+});
 app.post('/api/auth/logout', (req,res) => req.session.destroy(() => {res.clearCookie('lm_admin_session');res.status(204).end();}));
+const integrationRateLimit = rateLimit({windowMs:60*1000, limit:60, standardHeaders:true, legacyHeaders:false});
+app.post('/api/integrations/products/:integrationId/nutrition', integrationRateLimit, async (req,res) => {
+  const suppliedKey = String(req.get('X-LM-API-Key') || '');
+  const keyResult = await pool.query('SELECT api_key FROM api_integration_settings WHERE id=1');
+  const expectedKey = keyResult.rows[0]?.api_key || '';
+  const suppliedBuffer = Buffer.from(suppliedKey);
+  const expectedBuffer = Buffer.from(expectedKey);
+  const authorized = suppliedBuffer.length === expectedBuffer.length && suppliedBuffer.length > 0 && timingSafeEqual(suppliedBuffer, expectedBuffer);
+  if (!authorized) return res.status(401).json({error:'Chave de integração inválida.'});
+  const nutrition = req.body?.nutrition;
+  if (!nutrition || typeof nutrition !== 'object' || Array.isArray(nutrition) || !Object.keys(nutrition).length) {
+    return res.status(400).json({error:'Envie a tabela nutricional no campo nutrition como um objeto JSON não vazio.'});
+  }
+  const result = await pool.query('UPDATE products SET nutrition=$1::jsonb,updated_at=NOW() WHERE integration_id=$2 RETURNING integration_id,slug,name,updated_at', [JSON.stringify(nutrition), req.params.integrationId]);
+  if (!result.rowCount) return res.status(404).json({error:'Produto não encontrado para o ID de integração informado.'});
+  res.json({success:true,message:'Tabela nutricional atualizada.',product:result.rows[0]});
+});
 app.get('/api/gallery', async (_req,res) => { const result=await pool.query('SELECT id,url,description,category FROM media_library WHERE active=TRUE ORDER BY id DESC'); res.json(result.rows); });
 app.get('/api/admin/gallery', isAdmin, async (_req,res) => { const result=await pool.query('SELECT * FROM media_library ORDER BY id DESC'); res.json(result.rows); });
 app.post('/api/admin/gallery', isAdmin, async (req,res) => { const {url,description,category}=req.body||{}; if(!url) return res.status(400).json({error:'Envie uma imagem antes de salvar.'}); const result=await pool.query('INSERT INTO media_library(url,description,category) VALUES($1,$2,$3) RETURNING *',[url,String(description||''),String(category||'Institucional')]); res.status(201).json(result.rows[0]); });
@@ -621,9 +656,9 @@ app.post('/api/admin/products', isAdmin, async (req,res) => {
   const p = req.body || {};
   if (!String(p.slug||'').match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) || !String(p.name||'').trim()) return res.status(400).json({error:'Informe nome e identificador (slug) válido, usando letras minúsculas, números e hífens.'});
   try {
-    const result = await pool.query(`INSERT INTO products (slug,name,short_description,description,ingredients,image,images,category,nutrition,presentations,components,active,sort_order)
-      VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9::jsonb,$10::jsonb,$11::jsonb,$12,$13) RETURNING *`,
-      [p.slug,p.name,p.short_description||'',p.description||'',p.ingredients||'',p.image||'',JSON.stringify(Array.isArray(p.images)?p.images:[]),p.category||'Cremosos',JSON.stringify(p.nutrition||{}),JSON.stringify(Array.isArray(p.presentations)?p.presentations:[]),JSON.stringify(p.components&&typeof p.components==='object'&&!Array.isArray(p.components)?p.components:{}),p.active!==false,Number(p.sort_order)||0]);
+    const result = await pool.query(`INSERT INTO products (slug,name,short_description,description,ingredients,image,images,category,nutrition,presentations,components,active,sort_order,integration_id)
+      VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9::jsonb,$10::jsonb,$11::jsonb,$12,$13,$14) RETURNING *`,
+      [p.slug,p.name,p.short_description||'',p.description||'',p.ingredients||'',p.image||'',JSON.stringify(Array.isArray(p.images)?p.images:[]),p.category||'Cremosos',JSON.stringify(p.nutrition||{}),JSON.stringify(Array.isArray(p.presentations)?p.presentations:[]),JSON.stringify(p.components&&typeof p.components==='object'&&!Array.isArray(p.components)?p.components:{}),p.active!==false,Number(p.sort_order)||0,randomUUID()]);
     res.status(201).json(publicProduct(result.rows[0]));
   } catch (e) { if(e.code==='23505') return res.status(409).json({error:'Já existe um produto com esse identificador.'}); throw e; }
 });
