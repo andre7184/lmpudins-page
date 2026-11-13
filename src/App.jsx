@@ -126,23 +126,6 @@ function ProductModal({ product, onClose }) {
         <h2 id="modal-title">{product.name}</h2>
         <p>{product.description}</p>
         <div className="ingredient-block"><span>INGREDIENTES DO CATÁLOGO</span><p>{product.ingredients}</p></div>
-        <section className="modal-versions">
-          <a className="button button-quiet modal-versions-toggle" href="#versoes" onClick={(event)=>{event.preventDefault();onClose();window.location.hash='versoes';document.getElementById('versoes')?.scrollIntoView({behavior:'smooth',block:'start'});}}>Conhecer versões <ArrowRight size={16} /></a>
-          {showVersions && <div className="modal-versions-content">
-            <span className="eyebrow">APRESENTAÇÕES DE {product.name.toUpperCase()}</span>
-            <h3>O mesmo sabor, diferentes experiências.</h3>
-            {currentVersionImage && <div className="version-image-carousel">
-              <button type="button" aria-label="Imagem anterior" onClick={() => setVersionImageIndex(index => (index - 1 + versionImages.length) % versionImages.length)} disabled={versionImages.length < 2}><ArrowLeft size={19}/></button>
-              <figure><img src={currentVersionImage.src} alt={currentVersionImage.caption}/><figcaption>{currentVersionImage.caption}</figcaption></figure>
-              <button type="button" aria-label="Próxima imagem" onClick={() => setVersionImageIndex(index => (index + 1) % versionImages.length)} disabled={versionImages.length < 2}><ArrowRight size={19}/></button>
-            </div>}
-            {presentations.length ? <div className="modal-presentation-grid">{presentations.map(presentation => <article key={presentation.key || presentation.name}>
-              <h4>{presentation.name}</h4>{presentation.description && <p>{presentation.description}</p>}
-              {(presentation.sizes || []).map(size => <div className="modal-size-row" key={size.name}><strong>{size.name}</strong><span>{size.finalWeightG ? 'Peso líquido final: ' + size.finalWeightG + ' g' : 'Peso líquido final a confirmar'}</span></div>)}
-            </article>)}</div> : <p>As versões deste sabor ainda não foram cadastradas.</p>}
-            {!versionImages.length && <p className="nutrition-help">As imagens das versões aparecerão aqui quando forem cadastradas no Admin.</p>}
-          </div>}
-        </section>
         {(nutrients.length > 0 || otherNutrition.length > 0) && <div className="ingredient-block nutrition-block"><span>INFORMAÇÃO NUTRICIONAL</span>
           <p className="nutrition-serving">Porção: {nutrition.porcao || '140 g (1 unidade / pote)'}</p>
           {nutrients.length > 0 ? <div className="nutrition-table-wrap"><table className="nutrition-table"><thead><tr><th>Quantidade por porção</th><th>Quantidade</th><th>%VD*</th></tr></thead><tbody>{nutrients.map((item, index) => <tr key={`${item[0] || 'nutriente'}-${index}`}><th scope="row">{item[0]}</th><td>{item[1] ?? '—'}</td><td>{item[2] ?? '—'}</td></tr>)}</tbody></table></div> : <table className="nutrition-table"><tbody>{otherNutrition.map(([key,value]) => <tr key={key}><th scope="row">{key.replaceAll('_',' ')}</th><td>{String(value)}</td></tr>)}</tbody></table>}
@@ -205,23 +188,6 @@ function App() {
       });
     });
     return items.map((item, index) => ({ ...item, key: `${product.slug || product.id}-${item.src}-${index}` }));
-  });
-  const productVersionGalleryItems = catalogProducts.flatMap(product => {
-    const items = [];
-    const add = (value, caption) => {
-      const src = typeof value === 'string' ? value : value?.url || value?.src || value?.image || value?.path || '';
-      if (src && !items.some(item => item.src === src)) items.push({ src, caption: caption || product.name, product, key: src });
-    };
-    (Array.isArray(product.images) ? product.images : []).filter(image => image && typeof image === 'object' && image.destination === 'versao').forEach(image => add(image, image.presentationName ? product.name + ' · ' + image.presentationName + (image.sizeName ? ' · ' + image.sizeName : '') : product.name));
-    (Array.isArray(product.presentations) ? product.presentations : []).forEach(presentation => {
-      add(presentation.image, product.name + ' · ' + presentation.name);
-      (Array.isArray(presentation.images) ? presentation.images : []).forEach(image => add(image, product.name + ' · ' + presentation.name));
-      (Array.isArray(presentation.sizes) ? presentation.sizes : []).forEach(size => {
-        add(size.image, product.name + ' · ' + presentation.name + ' · ' + size.name);
-        (Array.isArray(size.images) ? size.images : []).forEach(image => add(image, product.name + ' · ' + presentation.name + ' · ' + size.name));
-      });
-    });
-    return items.map((item,index) => ({...item,key:`${product.slug || product.id}-version-${index}-${item.src}`}));
   });
   const galleryItems = [...independentGallery.map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins',product:null,key:'library-'+item.id})), ...productGalleryItems];
   const versionsGalleryItems = [
