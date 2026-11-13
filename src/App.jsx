@@ -43,8 +43,6 @@ function ProductCard({ product, onOpen }) {
 }
 
 function ProductModal({ product, onClose }) {
-  const [showVersions, setShowVersions] = useState(false);
-  const [versionImageIndex, setVersionImageIndex] = useState(0);
   const [flavorImageIndex, setFlavorImageIndex] = useState(0);
   useEffect(() => {
     if (!product) return;
@@ -53,44 +51,16 @@ function ProductModal({ product, onClose }) {
     document.body.style.overflow = 'hidden';
     return () => { document.removeEventListener('keydown', closeOnEscape); document.body.style.overflow = ''; };
   }, [product, onClose]);
-  useEffect(() => { setShowVersions(false); setVersionImageIndex(0); setFlavorImageIndex(0); }, [product]);
+  useEffect(() => { setFlavorImageIndex(0); }, [product]);
   if (!product) return null;
-  const presentations = Array.isArray(product.presentations) ? product.presentations : [];
   const flavorImages = [];
   const addFlavorImage = (value, caption) => {
     const src = typeof value === 'string' ? value : value?.url || value?.src || value?.image || value?.path || '';
     if (src && !flavorImages.some(image => image.src === src)) flavorImages.push({ src, caption: caption || value?.description || value?.caption || product.name });
   };
   addFlavorImage(product.image, product.name);
-  (Array.isArray(product.images) ? product.images : []).forEach(image => addFlavorImage(image, image?.description || product.name));
-  presentations.forEach(presentation => {
-    addFlavorImage(presentation.image, presentation.name);
-    (presentation.images || []).forEach(image => addFlavorImage(image, presentation.name));
-    (presentation.sizes || []).forEach(size => {
-      addFlavorImage(size.image, presentation.name + ' · ' + size.name);
-      (size.images || []).forEach(image => addFlavorImage(image, presentation.name + ' · ' + size.name));
-    });
-  });
+  (Array.isArray(product.images) ? product.images : []).filter(image => image && image.destination !== 'versao').forEach(image => addFlavorImage(image, image?.description || product.name));
   const currentFlavorImage = flavorImages.length ? flavorImages[flavorImageIndex % flavorImages.length] : null;
-  const versionImages = presentations.flatMap((presentation) => {
-    const key = presentation.key || presentation.name;
-    const images = [];
-    const add = (value, caption) => {
-      const src = typeof value === 'string' ? value : value?.url || value?.src || value?.image || value?.path || '';
-      if (src) images.push({ src, caption: caption || value?.description || value?.caption || presentation.name });
-    };
-    add(presentation.image, presentation.name);
-    (Array.isArray(presentation.images) ? presentation.images : []).forEach(image => add(image, presentation.name));
-    (Array.isArray(presentation.sizes) ? presentation.sizes : []).forEach(size => {
-      add(size.image, presentation.name + ' · ' + size.name);
-      (Array.isArray(size.images) ? size.images : []).forEach(image => add(image, presentation.name + ' · ' + size.name));
-    });
-    (Array.isArray(product.images) ? product.images : []).filter(image => image && image.destination === 'versao' && (image.presentationKey === key || image.presentationName === presentation.name)).forEach(image => {
-      if (!image.sizeName || !(presentation.sizes || []).length || presentation.sizes.some(size => size.name === image.sizeName)) add(image, presentation.name + (image.sizeName ? ' · ' + image.sizeName : ''));
-    });
-    return images.map((image, index) => ({ ...image, key: key + '-' + index }));
-  }).filter((image, index, all) => all.findIndex(item => item.src === image.src) === index);
-  const currentVersionImage = versionImages.length ? versionImages[versionImageIndex % versionImages.length] : null;
   const nutrition = product.nutrition || {};
   const parseNutrients = (value) => {
     if (Array.isArray(value)) return value;
@@ -178,15 +148,7 @@ function App() {
       if (src && !items.some(item => item.src === src)) items.push({ src, caption: caption || value?.description || value?.caption || product.name, product, key: key || src });
     };
     add(product.image, product.name, 'main');
-    (Array.isArray(product.images) ? product.images : Array.isArray(product.gallery) ? product.gallery : []).forEach((image, index) => add(image, image?.description || product.name, 'product-' + index));
-    (Array.isArray(product.presentations) ? product.presentations : []).forEach(presentation => {
-      add(presentation.image, presentation.name, 'presentation-' + (presentation.key || presentation.name));
-      (Array.isArray(presentation.images) ? presentation.images : []).forEach((image, index) => add(image, presentation.name, 'presentation-' + index));
-      (Array.isArray(presentation.sizes) ? presentation.sizes : []).forEach(size => {
-        add(size.image, presentation.name + ' · ' + size.name, 'size-' + size.name);
-        (Array.isArray(size.images) ? size.images : []).forEach((image, index) => add(image, presentation.name + ' · ' + size.name, 'size-' + size.name + '-' + index));
-      });
-    });
+    (Array.isArray(product.images) ? product.images.filter(image => image && image.destination !== 'versao') : Array.isArray(product.gallery) ? product.gallery : []).forEach((image, index) => add(image, image?.description || product.name, 'product-' + index));
     return items.map((item, index) => ({ ...item, key: `${product.slug || product.id}-${item.src}-${index}` }));
   });
   const galleryItems = [...independentGallery.map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins',product:null,key:'library-'+item.id})), ...productGalleryItems];
