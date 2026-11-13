@@ -537,6 +537,8 @@ async function initDb() {
   await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS version_description TEXT NOT NULL DEFAULT ''`);
   await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS version_sizes JSONB NOT NULL DEFAULT '[]'::jsonb`);
   await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS is_primary BOOLEAN NOT NULL DEFAULT FALSE`);
+  await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS placement_key TEXT NOT NULL DEFAULT ''`);
+  await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS show_in_gallery BOOLEAN NOT NULL DEFAULT TRUE`);
   await pool.query(`CREATE TABLE IF NOT EXISTS product_versions (
     id BIGSERIAL PRIMARY KEY, slug TEXT UNIQUE NOT NULL, name TEXT NOT NULL,
     short_description TEXT NOT NULL DEFAULT '', description TEXT NOT NULL DEFAULT '',
@@ -546,6 +548,21 @@ async function initDb() {
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_product_versions_active_order ON product_versions(active,sort_order,id)`);
+  // Apresentações padrão independentes dos sabores. Valores exibidos ao cliente, sem pesos de montagem.
+  const defaultVersions = [
+    { slug:'copo-americano', name:'Copo americano', short_description:'Uma apresentação prática e individual.', description:'Pudim servido em copo americano, pronto para apreciar.', sizes:[{name:'150 g',description:'Porção individual.',bestUse:'Consumo individual'}], sort_order:1 },
+    { slug:'forminha', name:'Forminha', short_description:'Pudim em forminha, com geleia acondicionada separadamente.', description:'A apresentação acompanha o pudim e sua geleia em embalagens separadas, acomodadas em uma caixa.', sizes:[
+      {name:'Mini · 80 g',description:'Pudim com 20 g de geleia em embalagem separada.',bestUse:'Porção individual'},
+      {name:'Pequeno · 120 g',description:'Pudim com 30 g de geleia em embalagem separada.',bestUse:'Porção individual'},
+      {name:'Médio · 380 g',description:'Pudim com 80 g de geleia em embalagem separada.',bestUse:'Compartilhar'},
+      {name:'Grande · 800 g',description:'Pudim com 160 g de geleia em embalagem separada.',bestUse:'Compartilhar'}
+    ], sort_order:2 }
+  ];
+  for (const version of defaultVersions) {
+    await pool.query(`INSERT INTO product_versions(slug,name,short_description,description,sizes,active,sort_order)
+      VALUES($1,$2,$3,$4,$5::jsonb,TRUE,$6) ON CONFLICT(slug) DO NOTHING`,
+      [version.slug,version.name,version.short_description,version.description,JSON.stringify(version.sizes),version.sort_order]);
+  }
 
   await pool.query(`CREATE TABLE IF NOT EXISTS admin_users (
     id BIGSERIAL PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
@@ -673,17 +690,18 @@ app.post('/api/integrations/products/:integrationId/nutrition', integrationRateL
   if (!result.rowCount) return res.status(404).json({error:'Produto não encontrado para o ID de integração informado.'});
   res.json({success:true,message:'Tabela nutricional atualizada.',product:result.rows[0]});
 });
-app.get('/api/gallery', async (_req,res) => { const result=await pool.query('SELECT id,url,description,category,destination,version_name,version_description,version_sizes,is_primary FROM media_library WHERE active=TRUE ORDER BY id DESC'); res.json(result.rows); });
+app.get('/api/gallery', async (_req,res) => { const result=await pool.query('SELECT id,url,description,category,destination,version_name,version_description,version_sizes,is_primary FROM media_library WHERE active=TRUE AND show_in_gallery=TRUE ORDER BY id DESC'); res.json(result.rows); });
+app.get('/api/site-assets', async (_req,res) => { const result=await pool.query("SELECT id,url,description,placement_key FROM media_library WHERE active=TRUE AND placement_key<>'' ORDER BY id DESC"); res.json(result.rows); });
 app.get('/api/admin/gallery', isAdmin, async (_req,res) => { const result=await pool.query('SELECT * FROM media_library ORDER BY id DESC'); res.json(result.rows); });
 app.post('/api/admin/gallery', isAdmin, async (req,res) => {
-  const {url,description,category,destination,version_name,version_description,version_sizes,is_primary}=req.body||{};
+  const {url,description,category,destination,version_name,version_description,version_sizes,is_primary,placement_key,show_in_gallery}=req.body||{};
   if(!url) return res.status(400).json({error:'Envie uma imagem antes de salvar.'});
   const mediaDestination=['geral','versoes'].includes(destination)?destination:'geral';
   if(mediaDestination==='versoes'&&!String(version_name||'').trim()) return res.status(400).json({error:'Informe a versão/apresentação da imagem.'});
   const sizes=Array.isArray(version_sizes)?version_sizes:[];
   const client=await pool.connect();
   try{await client.query('BEGIN');if(mediaDestination==='versoes'&&is_primary)await client.query('UPDATE media_library SET is_primary=FALSE WHERE LOWER(version_name)=LOWER($1)',[String(version_name).trim()]);
-    const result=await client.query('INSERT INTO media_library(url,description,category,destination,version_name,version_description,version_sizes,is_primary) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8) RETURNING *',[url,String(description||''),String(category||'Institucional'),mediaDestination,mediaDestination==='versoes'?String(version_name).trim():'',mediaDestination==='versoes'?String(version_description||''):'',JSON.stringify(mediaDestination==='versoes'?sizes:[]),mediaDestination==='versoes'&&Boolean(is_primary)]);
+    const result=await client.query('INSERT INTO media_library(url,description,category,destination,version_name,version_description,version_sizes,is_primary,placement_key,show_in_gallery) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10) RETURNING *',[url,String(description||''),String(category||'Institucional'),mediaDestination,mediaDestination==='versoes'?String(version_name).trim():'',mediaDestination==='versoes'?String(version_description||''):'',JSON.stringify(mediaDestination==='versoes'?sizes:[]),mediaDestination==='versoes'&&Boolean(is_primary),String(placement_key||''),show_in_gallery!==false]);
     await client.query('COMMIT');res.status(201).json(result.rows[0]);
   }catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
 });
