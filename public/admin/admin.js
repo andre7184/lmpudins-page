@@ -145,7 +145,18 @@ checkSession();
 async function loadLibrary(){
  const items=await api('/api/admin/gallery');const list=$('library-list');list.replaceChildren();
  if(!items.length){const p=document.createElement('p');p.className='muted';p.textContent='Nenhuma imagem cadastrada.';list.append(p);return}
- items.forEach(item=>{const row=document.createElement('div');row.className='gallery-item';const img=document.createElement('img');img.src=item.url;img.alt=item.description||item.category;const info=document.createElement('div');info.className='gallery-item-details';const desc=document.createElement('strong');desc.textContent=item.description||'Sem descrição';const cat=document.createElement('small');cat.textContent=item.category+' · '+(item.placement_key||'Sem posição fixa')+' · '+(item.show_in_gallery?'Aparece na Galeria':'Não aparece na Galeria');info.append(desc,cat);const del=document.createElement('button');del.className='btn danger';del.type='button';del.textContent='Remover';del.addEventListener('click',async()=>{if(!confirm('Remover esta imagem da biblioteca?'))return;try{await api('/api/admin/gallery/'+item.id,{method:'DELETE'});await loadLibrary()}catch(e){status('library-status',e.message)}});row.append(img,info,del);list.append(row)})
+ const placements=[['','Somente biblioteca / sem posição fixa'],['hero-image','Imagem principal do início'],['header-logo','Logo do cabeçalho'],['intro-logo','Logo da seção inicial'],['feature-image','Imagem da seção de destaque'],['about-logo','Logo de Quem somos'],['contact-logo','Logo da seção de contato'],['footer-logo','Logo do rodapé']];
+ items.forEach(item=>{
+  const row=document.createElement('div');row.className='gallery-item';const img=document.createElement('img');img.src=item.url;img.alt=item.description||item.category;
+  const info=document.createElement('div');info.className='gallery-item-details';
+  const desc=document.createElement('input');desc.value=item.description||'';desc.placeholder='Descrição / identificação';
+  const placement=document.createElement('select');placements.forEach(([value,label])=>placement.add(new Option(label,value)));placement.value=item.placement_key||'';
+  const galleryLabel=document.createElement('label');galleryLabel.className='check';const gallery=document.createElement('input');gallery.type='checkbox';gallery.checked=!!item.show_in_gallery;galleryLabel.append(gallery,document.createTextNode(' Exibir na Galeria principal'));
+  const save=document.createElement('button');save.type='button';save.className='btn';save.textContent='Salvar alterações';save.addEventListener('click',async()=>{try{await api('/api/admin/gallery/'+item.id,{method:'PUT',body:JSON.stringify({description:desc.value,category:item.category,placement_key:placement.value,show_in_gallery:gallery.checked})});await loadLibrary();status('library-status','Imagem atualizada.')}catch(e){status('library-status',e.message)}});
+  const cat=document.createElement('small');cat.textContent=item.category+' · '+item.url;info.append(desc,placement,galleryLabel,cat,save);
+  const del=document.createElement('button');del.className='btn danger';del.type='button';del.textContent='Remover';del.addEventListener('click',async()=>{if(!confirm('Remover esta imagem da biblioteca?'))return;try{await api('/api/admin/gallery/'+item.id,{method:'DELETE'});await loadLibrary()}catch(e){status('library-status',e.message)}});
+  row.append(img,info,del);list.append(row)
+ })
 }
 $('library-upload').addEventListener('click',async()=>{
  const file=$('library-file').files?.[0];if(!file){status('library-status','Selecione uma imagem.');return}
