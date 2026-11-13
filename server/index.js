@@ -563,6 +563,7 @@ async function initDb() {
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_product_versions_active_order ON product_versions(active,sort_order,id)`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS catalog_seed_versions (version TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
   // Apresentações padrão independentes dos sabores. Valores exibidos ao cliente, sem pesos de montagem.
   const defaultVersions = [
     { slug:'copo-americano', name:'Copo americano', short_description:'Uma apresentação prática e individual.', description:'Pudim servido em copo americano, pronto para apreciar.', sizes:[{name:'140 g',description:'Porção individual em copo americano.',bestUse:'Consumo individual'}], sort_order:1 },
@@ -577,6 +578,16 @@ async function initDb() {
     await pool.query(`INSERT INTO product_versions(slug,name,short_description,description,sizes,active,sort_order)
       VALUES($1,$2,$3,$4,$5::jsonb,TRUE,$6) ON CONFLICT(slug) DO NOTHING`,
       [version.slug,version.name,version.short_description,version.description,JSON.stringify(version.sizes),version.sort_order]);
+  }
+  const publicVersionSeed = 'public-version-customer-display-v2';
+  const publicVersionSeedApplied = await pool.query('SELECT 1 FROM catalog_seed_versions WHERE version=$1',[publicVersionSeed]);
+  if (!publicVersionSeedApplied.rowCount) {
+    for (const version of defaultVersions) {
+      await pool.query(`UPDATE product_versions SET short_description=$1,description=$2,sizes=$3::jsonb,updated_at=NOW()
+        WHERE slug=$4 AND updated_at=created_at`,
+        [version.short_description,version.description,JSON.stringify(version.sizes),version.slug]);
+    }
+    await pool.query('INSERT INTO catalog_seed_versions(version) VALUES($1) ON CONFLICT DO NOTHING',[publicVersionSeed]);
   }
 
   await pool.query(`CREATE TABLE IF NOT EXISTS admin_users (
