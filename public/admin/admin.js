@@ -11,22 +11,6 @@ function status(id,message){$(id).textContent=message||''}
 function showDashboard(show){$('login').classList.toggle('hidden',show);$('dashboard').classList.toggle('hidden',!show)}
 function openModal(title){$('modal-title').textContent=title;$('product-modal').classList.remove('hidden');document.body.style.overflow='hidden'}
 function closeModal(){$('product-modal').classList.add('hidden');document.body.style.overflow=''}
-function updateVersionImageOptions(){
-  const presentationSelect=$('version-presentation'), sizeSelect=$('version-size');
-  if(!presentationSelect||!sizeSelect)return;
-  let presentations=[];
-  try{const parsed=JSON.parse($('presentations').value||'[]');if(Array.isArray(parsed))presentations=parsed}catch{}
-  const previous=presentationSelect.value;
-  presentationSelect.replaceChildren(new Option('Selecione a apresentação',''));
-  presentations.forEach((presentation,index)=>presentationSelect.add(new Option(presentation.name||('Apresentação '+(index+1)),presentation.key||presentation.name||String(index))));
-  if([...presentationSelect.options].some(option=>option.value===previous))presentationSelect.value=previous;
-  const selected=presentationSelect.value;
-  const presentation=presentations.find((item,index)=>(item.key||item.name||String(index))===selected);
-  const previousSize=sizeSelect.value;
-  sizeSelect.replaceChildren(new Option('Toda a apresentação',''));
-  (presentation?.sizes||[]).forEach(size=>sizeSelect.add(new Option(size.name,size.name)));
-  if([...sizeSelect.options].some(option=>option.value===previousSize))sizeSelect.value=previousSize;
-}
 function renderGallery(){
   const list=$('gallery-list');list.replaceChildren();
   if(!galleryImages.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Nenhuma imagem cadastrada.';list.appendChild(empty);return}
@@ -35,8 +19,7 @@ function renderGallery(){
     const img=document.createElement('img');img.src=item.url||item.src||item.image||item.path;img.alt=item.description||'Imagem do produto';
     const details=document.createElement('div');details.className='gallery-item-details';
     const desc=document.createElement('input');desc.type='text';desc.placeholder='Descrição da imagem';desc.value=item.description||'';desc.setAttribute('aria-label','Descrição da imagem '+(index+1));desc.addEventListener('input',()=>{galleryImages[index].description=desc.value});
-    const destination=document.createElement('small');destination.className='gallery-item-destination';
-    destination.textContent=item.destination==='versao'?'VERSÃO · '+(item.presentationName||'Apresentação')+(item.sizeName?' · '+item.sizeName:''):'SABOR · IMAGEM GERAL';
+    const destination=document.createElement('small');destination.className='gallery-item-destination';destination.textContent='IMAGEM DO SABOR';
     const path=document.createElement('small');path.textContent=item.url||item.src||item.image||item.path;
     details.append(desc,destination,path);
     const remove=document.createElement('button');remove.type='button';remove.className='btn danger';remove.textContent='Remover';remove.addEventListener('click',()=>{galleryImages.splice(index,1);renderGallery()});
@@ -44,10 +27,10 @@ function renderGallery(){
   });
 }
 function clearForm(){
-  selectedId=null;galleryImages=[];$('product-form').reset();$('product-id').value='';$('sort-order').value='0';$('active').checked=true;$('nutrition').value='{}';$('components').value='{}';$('presentations').value='[]';$('gallery-destination').value='sabor';$('version-image-fields').style.display='none';updateVersionImageOptions();$('delete-product').classList.add('hidden');status('form-status','');status('gallery-upload-status','');$('product-qrcode-panel').classList.add('hidden');renderGallery();renderList();openModal('Novo produto');
+  selectedId=null;galleryImages=[];$('product-form').reset();$('product-id').value='';$('sort-order').value='0';$('active').checked=true;$('nutrition').value='{}';$('components').value='{}';$('presentations').value='[]';$('delete-product').classList.add('hidden');status('form-status','');status('gallery-upload-status','');$('product-qrcode-panel').classList.add('hidden');renderGallery();renderList();openModal('Novo produto');
 }
 function fillForm(p){
-  selectedId=p.id;galleryImages=Array.isArray(p.images)?p.images.map(x=>({...x})):[];if(p.image&&!galleryImages.some(x=>(x.url||x.src||x.image||x.path)===p.image))galleryImages.unshift({url:p.image,description:p.image_description||''});else if(p.image){const i=galleryImages.findIndex(x=>(x.url||x.src||x.image||x.path)===p.image);if(i>0)galleryImages.unshift(galleryImages.splice(i,1)[0]);} $('product-id').value=p.id;$('slug').value=p.slug;$('name').value=p.name;$('category').value=p.category||'Cremosos';$('sort-order').value=p.sort_order||0;$('short-description').value=p.short_description||'';$('description').value=p.description||'';$('ingredients').value=p.ingredients||'';$('image').value=p.image||'';$('nutrition').value=JSON.stringify(p.nutrition||{},null,2);$('components').value=JSON.stringify(p.components||{},null,2);$('presentations').value=JSON.stringify(p.presentations||[],null,2);$('active').checked=!!p.active;$('gallery-destination').value='sabor';$('version-image-fields').style.display='none';updateVersionImageOptions();$('delete-product').classList.remove('hidden');$('gallery-file').value='';$('gallery-description').value='';status('form-status','');status('gallery-upload-status','');$('product-qrcode-panel').classList.remove('hidden');renderProductQr();renderGallery();renderList();openModal('Editar produto');
+  selectedId=p.id;galleryImages=Array.isArray(p.images)?p.images.map(x=>({...x})):[];if(p.image&&!galleryImages.some(x=>(x.url||x.src||x.image||x.path)===p.image))galleryImages.unshift({url:p.image,description:p.image_description||''});else if(p.image){const i=galleryImages.findIndex(x=>(x.url||x.src||x.image||x.path)===p.image);if(i>0)galleryImages.unshift(galleryImages.splice(i,1)[0]);} $('product-id').value=p.id;$('slug').value=p.slug;$('name').value=p.name;$('category').value=p.category||'Cremosos';$('sort-order').value=p.sort_order||0;$('short-description').value=p.short_description||'';$('description').value=p.description||'';$('ingredients').value=p.ingredients||'';$('image').value=p.image||'';$('nutrition').value=JSON.stringify(p.nutrition||{},null,2);$('components').value=JSON.stringify(p.components||{},null,2);$('presentations').value=JSON.stringify(p.presentations||[],null,2);$('active').checked=!!p.active;$('delete-product').classList.remove('hidden');$('gallery-file').value='';$('gallery-description').value='';status('form-status','');status('gallery-upload-status','');$('product-qrcode-panel').classList.remove('hidden');renderProductQr();renderGallery();renderList();openModal('Editar produto');
 }
 
 function productPageUrl(){
@@ -95,50 +78,22 @@ $('login-form').addEventListener('submit',async e=>{e.preventDefault();status('l
 $('logout').addEventListener('click',async()=>{try{await api('/api/auth/logout',{method:'POST'})}finally{showDashboard(false)}});
 $('new-product').addEventListener('click',clearForm);$('close-modal').addEventListener('click',closeModal);$('product-modal').addEventListener('click',e=>{if(e.target.matches('[data-close-modal]'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('product-modal').classList.contains('hidden'))closeModal()});
 $('product-form').addEventListener('submit',async e=>{
-  e.preventDefault();status('form-status','Salvando…');let nutrition,components,presentations;
+  e.preventDefault();status('form-status','Salvando…');let nutrition,components;
   try{nutrition=JSON.parse($('nutrition').value||'{}');if(!nutrition||Array.isArray(nutrition)||typeof nutrition!=='object')throw new Error()}catch{status('form-status','A informação nutricional precisa ser um objeto JSON válido.');return}
   try{components=JSON.parse($('components').value||'{}');if(!components||Array.isArray(components)||typeof components!=='object')throw new Error()}catch{status('form-status','A composição por componente precisa ser um objeto JSON válido.');return}
-  try{presentations=JSON.parse($('presentations').value||'[]');if(!Array.isArray(presentations))throw new Error()}catch{status('form-status','Apresentações e tamanhos precisam ser uma lista JSON válida.');return}
+
   const mainImage=galleryImages.find(item=>item.destination!=='versao')||galleryImages[0];
-  const p={slug:$('slug').value.trim(),name:$('name').value.trim(),category:$('category').value,sort_order:Number($('sort-order').value)||0,short_description:$('short-description').value,description:$('description').value,ingredients:$('ingredients').value,image:(mainImage?.url||mainImage?.src||mainImage?.image||mainImage?.path||$('image').value||''),image_description:mainImage?.description||'',images:galleryImages,nutrition,components,presentations,active:$('active').checked};
+  const p={slug:$('slug').value.trim(),name:$('name').value.trim(),category:$('category').value,sort_order:Number($('sort-order').value)||0,short_description:$('short-description').value,description:$('description').value,ingredients:$('ingredients').value,image:(mainImage?.url||mainImage?.src||mainImage?.image||mainImage?.path||$('image').value||''),image_description:mainImage?.description||'',images:galleryImages,nutrition,components,active:$('active').checked};
   try{if(selectedId)await api('/api/admin/products/'+selectedId,{method:'PUT',body:JSON.stringify(p)});else await api('/api/admin/products',{method:'POST',body:JSON.stringify(p)});await loadProducts();closeModal();status('products-status','Produto salvo com sucesso.')}catch(err){status('form-status',err.message)}
 });
 $('delete-product').addEventListener('click',async()=>{if(!selectedId||!confirm('Excluir este produto do catálogo?'))return;try{await api('/api/admin/products/'+selectedId,{method:'DELETE'});await loadProducts();closeModal();status('products-status','Produto excluído.')}catch(err){status('form-status',err.message)}});
 async function uploadImage(){
-  const file=$('gallery-file').files?.[0];if(!file){status('gallery-upload-status','Selecione uma imagem antes de enviar.');return}
-  const destination=$('gallery-destination').value;
-  let presentation=null;
-  if(destination==='versao'){
-    try{const list=JSON.parse($('presentations').value||'[]');presentation=list.find((item,index)=>(item.key||item.name||String(index))===$('version-presentation').value)||null}
-    catch{status('gallery-upload-status','Corrija o JSON de apresentações antes de associar uma imagem a uma versão.');return}
-    if(!presentation){status('gallery-upload-status','Selecione uma apresentação antes de enviar a imagem.');return}
-  }
-  const body=new FormData();body.append('image',file);status('gallery-upload-status','Enviando imagem…');
-  try{
-    const response=await fetch('/api/admin/uploads',{method:'POST',credentials:'same-origin',body});
-    const data=await response.json().catch(()=>({error:'Resposta inválida do servidor.'}));
-    if(!response.ok)throw new Error(data.error||'Falha no envio.');
-    const description=$('gallery-description').value.trim();
-    const image={url:data.url,description,destination};
-    if(destination==='versao'){
-      image.presentationKey=presentation.key||presentation.name;
-      image.presentationName=presentation.name;
-      image.sizeName=$('version-size').value||'';
-    }
-    galleryImages.push(image);
-    if(destination==='sabor'&&!$('image').value)$('image').value=data.url;
-    renderGallery();
-    status('gallery-upload-status',destination==='versao'?'Imagem associada à versão. Salve o produto para gravar a alteração.':'Imagem associada ao sabor. Salve o produto para gravar a alteração.');
-    $('gallery-description').value='';$('gallery-file').value='';
-  }catch(err){status('gallery-upload-status',err.message)}
+ const file=$('gallery-file').files?.[0];if(!file){status('gallery-upload-status','Selecione uma imagem antes de enviar.');return}
+ const body=new FormData();body.append('image',file);status('gallery-upload-status','Enviando imagem…');
+ try{const response=await fetch('/api/admin/uploads',{method:'POST',credentials:'same-origin',body});const data=await response.json().catch(()=>({error:'Resposta inválida do servidor.'}));if(!response.ok)throw new Error(data.error||'Falha no envio.');
+ const image={url:data.url,description:$('gallery-description').value.trim(),destination:'sabor'};galleryImages.push(image);if(!$('image').value)$('image').value=data.url;renderGallery();status('gallery-upload-status','Imagem associada ao sabor. Salve o produto para gravar a alteração.');$('gallery-description').value='';$('gallery-file').value='';
+ }catch(err){status('gallery-upload-status',err.message)}
 }
-$('gallery-destination').addEventListener('change',()=>{
-  const isVersion=$('gallery-destination').value==='versao';
-  $('version-image-fields').style.display=isVersion?'block':'none';
-  updateVersionImageOptions();
-});
-$('presentations').addEventListener('input',updateVersionImageOptions);
-$('version-presentation').addEventListener('change',updateVersionImageOptions);
 $('upload-gallery-image').addEventListener('click',uploadImage);
 checkSession();
 
