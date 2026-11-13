@@ -539,6 +539,21 @@ async function initDb() {
   await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS is_primary BOOLEAN NOT NULL DEFAULT FALSE`);
   await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS placement_key TEXT NOT NULL DEFAULT ''`);
   await pool.query(`ALTER TABLE media_library ADD COLUMN IF NOT EXISTS show_in_gallery BOOLEAN NOT NULL DEFAULT TRUE`);
+  const defaultSiteAssets = [
+    ['Logo do cabeçalho','/images/Logo%20circular.png','header-logo'],
+    ['Logo da seção inicial','/images/Logo%20circular.png','intro-logo'],
+    ['Imagem principal do início','/images/campanha/hero-pudim.jfif','hero-image'],
+    ['Imagem da seção de destaque','/images/campanha/detalhe-caramelo.jfif','feature-image'],
+    ['Logo de Quem somos','/images/Logo%20circular.png','about-logo'],
+    ['Logo da seção de contato','/images/Logo%20vertical.png','contact-logo'],
+    ['Logo do rodapé','/images/Logo%20horizontal.png','footer-logo']
+  ];
+  for (const [description,url,placement] of defaultSiteAssets) {
+    await pool.query(`INSERT INTO media_library(url,description,category,destination,placement_key,show_in_gallery)
+      SELECT $1,$2,'Institucional','geral',$3,FALSE
+      WHERE NOT EXISTS (SELECT 1 FROM media_library WHERE placement_key=$3)`,
+      [url,description,placement]);
+  }
   await pool.query(`CREATE TABLE IF NOT EXISTS product_versions (
     id BIGSERIAL PRIMARY KEY, slug TEXT UNIQUE NOT NULL, name TEXT NOT NULL,
     short_description TEXT NOT NULL DEFAULT '', description TEXT NOT NULL DEFAULT '',
@@ -705,6 +720,7 @@ app.post('/api/admin/gallery', isAdmin, async (req,res) => {
     await client.query('COMMIT');res.status(201).json(result.rows[0]);
   }catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
 });
+app.put('/api/admin/gallery/:id', isAdmin, async (req,res) => { const {description,category,placement_key,show_in_gallery}=req.body||{}; const result=await pool.query('UPDATE media_library SET description=$1,category=$2,placement_key=$3,show_in_gallery=$4 WHERE id=$5 RETURNING *',[String(description||''),String(category||'Institucional'),String(placement_key||''),Boolean(show_in_gallery),req.params.id]); if(!result.rowCount)return res.status(404).json({error:'Imagem não encontrada.'}); res.json(result.rows[0]); });
 app.delete('/api/admin/gallery/:id', isAdmin, async (req,res) => { const result=await pool.query('DELETE FROM media_library WHERE id=$1 RETURNING id',[req.params.id]); if(!result.rowCount)return res.status(404).json({error:'Imagem não encontrada.'}); res.status(204).end(); });
 app.get('/api/versions', async (_req,res) => { const result=await pool.query('SELECT * FROM product_versions WHERE active=TRUE ORDER BY sort_order,id'); res.json(result.rows); });
 app.get('/api/admin/versions', isAdmin, async (_req,res) => { const result=await pool.query('SELECT * FROM product_versions ORDER BY sort_order,id'); res.json(result.rows); });
