@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { ArrowDown, ArrowRight, ArrowUpRight, ArrowLeft, Check, Menu, X, Sparkles, Heart, Instagram, MessageCircle, ChevronDown } from 'lucide-react';
 import { products as fallbackProducts } from './products.js';
 
-function Logo({ compact = false }) {
+function Logo({ compact = false, src = '/images/Logo%20circular.png' }) {
   return <a className={`brand ${compact ? 'brand-compact' : ''}`} href="#inicio" aria-label="LM Pudins — início">
-    <img className="brand-image" src="/images/Logo%20circular.png" alt="LM Pudins" />
+    <img className="brand-image" src={src} alt="LM Pudins" />
   </a>;
 }
 
@@ -166,6 +166,7 @@ function App() {
   const [versionsGalleryIndex, setVersionsGalleryIndex] = useState(0);
   const [independentGallery, setIndependentGallery] = useState([]);
   const [catalogVersions, setCatalogVersions] = useState([]);
+  const [siteAssets, setSiteAssets] = useState([]);
   const filters = ['Todos', 'Frutados', 'Intensos', 'Cremosos'];
   useEffect(() => {
     let cancelled = false;
@@ -180,6 +181,8 @@ function App() {
   }, []);
   useEffect(() => { fetch('/api/gallery').then(r=>r.ok?r.json():[]).then(items=>setIndependentGallery(Array.isArray(items)?items:[])).catch(()=>{}); }, []);
   useEffect(() => { fetch('/api/versions').then(r=>r.ok?r.json():[]).then(items=>setCatalogVersions(Array.isArray(items)?items:[])).catch(()=>{}); }, []);
+  useEffect(() => { fetch('/api/site-assets').then(r=>r.ok?r.json():[]).then(items=>setSiteAssets(Array.isArray(items)?items:[])).catch(()=>{}); }, []);
+  const siteAsset = (key, fallback) => siteAssets.find(item => item.placement_key === key)?.url || fallback;
   useEffect(() => {
     if (window.location.hash === '#versoes') {
       window.requestAnimationFrame(() => document.getElementById('versoes')?.scrollIntoView({ block: 'start' }));
@@ -222,9 +225,8 @@ function App() {
   });
   const galleryItems = [...independentGallery.map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins',product:null,key:'library-'+item.id})), ...productGalleryItems];
   const versionsGalleryItems = [
-    ...catalogVersions.flatMap(version=>[version.image,version.detail_image,...(Array.isArray(version.gallery_images)?version.gallery_images:[])].filter(Boolean).map((src,index)=>({src,caption:version.name+' · '+(index===0?'Imagem principal':index===1?'Detalhe':'Galeria'),product:null,key:'version-'+version.id+'-'+index}))),
+    ...catalogVersions.flatMap(version=>[...(version.image?[{url:version.image,description:'Imagem principal'}]:[]),...(version.detail_image?[{url:version.detail_image,description:'Detalhe'}]:[]),...(Array.isArray(version.gallery_images)?version.gallery_images:[])].map((item,index)=>({src:typeof item==='string'?item:(item.url||item.src||item.image||''),caption:version.name+' · '+(typeof item==='string'?(index===0?'Imagem principal':'Galeria'):(item.description||item.role||'Galeria')),product:null,key:'version-'+version.id+'-'+index})).filter(item=>item.src)),
     ...independentGallery.filter(item=>item.destination==='versoes').map(item=>({src:item.url,caption:item.description||item.category||'LM Pudins · Versões',product:null,key:'library-version-'+item.id})),
-    ...productVersionGalleryItems
   ].filter((item,index,all)=>all.findIndex(candidate=>candidate.src===item.src)===index);
   const moveGallery = (step) => setGalleryIndex((current) => galleryItems.length ? (current + step + galleryItems.length) % galleryItems.length : 0);
   const moveVersionsGallery = (step) => setVersionsGalleryIndex((current) => versionsGalleryItems.length ? (current + step + versionsGalleryItems.length) % versionsGalleryItems.length : 0);
@@ -252,7 +254,7 @@ function App() {
   const closeMenu = () => setMenuOpen(false);
   return <>
     <header className={`site-header ${scrolled ? 'header-scrolled' : ''}`}>
-      <div className="header-inner"><Logo />
+      <div className="header-inner"><Logo src={siteAsset("header-logo", "/images/Logo%20circular.png")} />
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuOpen}>{menuOpen ? <X /> : <Menu />}</button>
         <nav className={menuOpen ? 'nav nav-open' : 'nav'} aria-label="Navegação principal">
           <a href="#inicio" onClick={closeMenu}>Início</a><a href="#sabores" onClick={closeMenu}>Sabores</a><a href="#versoes" onClick={closeMenu}>Nossas versões</a><a href="#quem-somos" onClick={closeMenu}>Quem somos</a><a href="#galeria" onClick={closeMenu}>Galeria</a><a href="#contato" onClick={closeMenu}>Contato</a>
@@ -274,7 +276,7 @@ function App() {
         <div className="hero-stage">
           <div className="orbit orbit-one" /><div className="orbit orbit-two" />
           <div className="hero-stamp"><span>FEITO COM</span><Heart size={17} fill="currentColor" /><span>CARINHO</span></div>
-          <img className="hero-photo" src="/images/campanha/hero-pudim.jfif" alt="Pudim clássico com calda de caramelo da LM Pudins" fetchPriority="high" />
+          <img className="hero-photo" src={siteAsset("hero-image", "/images/campanha/hero-pudim.jfif")} alt="Pudim da LM Pudins" fetchPriority="high" />
           <div className="hero-note"><span className="note-rule" /><span>CREMOSIDADE<br /><strong>INESQUECÍVEL</strong></span></div>
           <div className="hero-floating floating-top">doce<br /><em>perfeição</em></div>
           <div className="hero-floating floating-bottom">LM <span>✦</span> PUDINS</div>
@@ -283,7 +285,7 @@ function App() {
       </section>
 
       <section className="intro-section" id="essencia">
-        <div className="intro-mark"><img src="/images/Logo%20circular.png" alt="Logo circular da LM Pudins" /></div>
+        <div className="intro-mark"><img src={siteAsset("intro-logo", "/images/Logo%20circular.png")} alt="Logo da LM Pudins" /></div>
         <div className="intro-copy reveal"><span className="eyebrow">O PRAZER ESTÁ NOS DETALHES</span><h2>Não é só sobremesa.<br /><em>É o momento todo.</em></h2></div>
         <p className="intro-description reveal">Do brilho delicado do caramelo à textura macia de cada fatia, cada pudim é um convite para desacelerar e saborear o que realmente importa.</p>
       </section>
@@ -311,7 +313,7 @@ function App() {
       </section>
 
       <section className="feature-section" id="essencia">
-        <div className="feature-art"><div className="feature-frame"><img className="feature-real-image" src="/images/campanha/detalhe-caramelo.jfif" alt="Detalhe da calda de caramelo sobre pudim" loading="lazy" /><span className="feature-vertical">UMA EXPERIÊNCIA SENSORIAL</span></div><span className="feature-number">01 <i>/ 03</i></span></div>
+        <div className="feature-art"><div className="feature-frame"><img className="feature-real-image" src={siteAsset("feature-image", "/images/campanha/detalhe-caramelo.jfif")} alt="Detalhe de um pudim da LM Pudins" loading="lazy" /><span className="feature-vertical">UMA EXPERIÊNCIA SENSORIAL</span></div><span className="feature-number">01 <i>/ 03</i></span></div>
         <div className="feature-copy reveal"><span className="eyebrow eyebrow-gold">NOSSA ESSÊNCIA</span><h2>Tradição e Qualidade<br /><em>em Cada Receita</em></h2><p>A LM Pudins nasceu da paixão por doces e do desejo de transformar ingredientes simples em momentos extraordinários. Cada pudim é feito com carinho, seguindo receitas que valorizam o sabor, a textura e a qualidade.</p><div className="feature-points"><div><span><Check size={15} /></span><p><strong>Ingredientes</strong><small>selecionados</small></p></div><div><span><Check size={15} /></span><p><strong>Produção</strong><small>artesanal</small></p></div><div><span><Check size={15} /></span><p><strong>Sabor</strong><small>incomparável</small></p></div><div><span><Heart size={15} /></span><p><strong>Feito com</strong><small>muito carinho</small></p></div></div><a className="text-link text-link-light" href="#sabores">Explore a coleção <ArrowRight size={15} /></a></div>
       </section>
 
@@ -325,12 +327,12 @@ function App() {
         <div className="gallery-intro"><h2>Beleza que<br /><em>se saboreia</em></h2><p>Conheça a LM Pudins por meio de nossos produtos, embalagens, loja e bastidores.</p><div className="gallery-counter">{galleryItems.length ? String(galleryIndex + 1).padStart(2,'0') : '00'} / {String(galleryItems.length).padStart(2,'0')}</div><a className="button button-quiet" href="#sabores">Ver nossos sabores <ArrowRight size={16}/></a></div>
       </section>
       <section className="about-section" id="quem-somos">
-        <div className="about-mark"><img src="/images/Logo%20circular.png" alt="Logo da LM Pudins" loading="lazy"/></div>
+        <div className="about-mark"><img src={siteAsset("about-logo", "/images/Logo%20circular.png")} alt="Logo da LM Pudins" loading="lazy"/></div>
         <div className="about-copy"><span className="eyebrow eyebrow-gold">QUEM SOMOS</span><h2>Uma paixão que virou<br/><em>doce propósito.</em></h2><p>A LM Pudins surgiu do carinho pela confeitaria e da vontade de transformar receitas em momentos especiais. Acreditamos que uma sobremesa pode reunir pessoas, celebrar conquistas e tornar simples encontros em lembranças gostosas.</p><p>Nossa ideia é unir sabor, cuidado artesanal e ingredientes selecionados em pudins feitos com atenção a cada detalhe — do preparo à apresentação — para levar um pouco mais de doçura ao dia de cada cliente.</p><a className="button button-quiet" href="#sabores">Conheça nossos sabores <ArrowRight size={16}/></a></div>
       </section>
 
       <section className="contact-section contact-page" id="contato">
-        <div className="contact-brand"><img src="/images/Logo%20vertical.png" alt="LM Pudins — logo vertical" /></div>
+        <div className="contact-brand"><img src={siteAsset("contact-logo", "/images/Logo%20vertical.png")} alt="LM Pudins" /></div>
         <div className="contact-copy reveal"><span className="eyebrow eyebrow-gold">FALE COM A LM PUDINS</span><h2>Vamos adoçar<br/><em>seu dia?</em></h2><p>Acompanhe nossas novidades, conheça os bastidores e fale com a gente pelo seu canal preferido.</p>
           <div className="contact-social-grid">
             <a href="https://www.instagram.com/lmpudinsgourmet/" target="_blank" rel="noopener noreferrer"><Instagram/><span><strong>Instagram</strong><small>@lmpudinsgourmet</small></span><ArrowUpRight/></a>
@@ -343,7 +345,7 @@ function App() {
       </section>
     </main>
 
-    <footer className="site-footer"><div className="footer-top"><Logo compact /><p>LM Pudins<br />A sobremesa perfeita para adoçar sua vida!</p><a className="footer-back" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer">Peça pelo iFood ↗</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><MessageCircle size={16}/></a><a href="https://www.instagram.com/lmpudinsgourmet/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={16}/></a><a href="https://www.youtube.com/@LMPudins" target="_blank" rel="noopener noreferrer" aria-label="YouTube">▶</a><a href="mailto:lmpudins@gmail.com" aria-label="E-mail">✉</a></span></div></footer>
+    <footer className="site-footer"><div className="footer-top"><Logo compact src={siteAsset("footer-logo", "/images/Logo%20horizontal.png")} /><p>LM Pudins<br />A sobremesa perfeita para adoçar sua vida!</p><a className="footer-back" href="https://www.ifood.com.br/delivery/campo-grande-ms/lm-pudins-nova-lima" target="_blank" rel="noopener noreferrer">Peça pelo iFood ↗</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LM Pudins. Todos os direitos reservados.</span><span>FEITO PARA SER SABOREADO <i>✦</i></span><span className="footer-social"><a href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><MessageCircle size={16}/></a><a href="https://www.instagram.com/lmpudinsgourmet/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={16}/></a><a href="https://www.youtube.com/@LMPudins" target="_blank" rel="noopener noreferrer" aria-label="YouTube">▶</a><a href="mailto:lmpudins@gmail.com" aria-label="E-mail">✉</a></span></div></footer>
     <a className="whatsapp-float" href="https://wa.me/5567991173161" target="_blank" rel="noopener noreferrer" aria-label="Fale com a LM Pudins pelo WhatsApp"><MessageCircle size={27}/><span>Fale conosco</span></a>
     <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
   </>;
