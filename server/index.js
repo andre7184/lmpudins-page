@@ -565,12 +565,12 @@ async function initDb() {
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_product_versions_active_order ON product_versions(active,sort_order,id)`);
   // Apresentações padrão independentes dos sabores. Valores exibidos ao cliente, sem pesos de montagem.
   const defaultVersions = [
-    { slug:'copo-americano', name:'Copo americano', short_description:'Uma apresentação prática e individual.', description:'Pudim servido em copo americano, pronto para apreciar.', sizes:[{name:'150 g',description:'Porção individual.',bestUse:'Consumo individual'}], sort_order:1 },
+    { slug:'copo-americano', name:'Copo americano', short_description:'Uma apresentação prática e individual.', description:'Pudim servido em copo americano, pronto para apreciar.', sizes:[{name:'140 g',description:'Porção individual em copo americano.',bestUse:'Consumo individual'}], sort_order:1 },
     { slug:'forminha', name:'Forminha', short_description:'Pudim em forminha, com geleia acondicionada separadamente.', description:'A apresentação acompanha o pudim e sua geleia em embalagens separadas, acomodadas em uma caixa.', sizes:[
-      {name:'Mini · 80 g',description:'Pudim com 20 g de geleia em embalagem separada.',bestUse:'Porção individual'},
-      {name:'Pequeno · 120 g',description:'Pudim com 30 g de geleia em embalagem separada.',bestUse:'Porção individual'},
-      {name:'Médio · 380 g',description:'Pudim com 80 g de geleia em embalagem separada.',bestUse:'Compartilhar'},
-      {name:'Grande · 800 g',description:'Pudim com 160 g de geleia em embalagem separada.',bestUse:'Compartilhar'}
+      {name:'Mini',description:'Pudim acompanhado de geleia em embalagem separada.',bestUse:'Porção individual'},
+      {name:'Pequeno',description:'Pudim acompanhado de geleia em embalagem separada.',bestUse:'Porção individual'},
+      {name:'Médio · 500 g',description:'Pudim e geleia acondicionados separadamente dentro da caixa.',bestUse:'Compartilhar'},
+      {name:'Grande',description:'Pudim acompanhado de geleia em embalagem separada.',bestUse:'Compartilhar'}
     ], sort_order:2 }
   ];
   for (const version of defaultVersions) {
