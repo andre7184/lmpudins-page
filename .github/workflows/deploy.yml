@@ -119,6 +119,23 @@ jobs:
             echo "==> Testando API"
             docker compose exec -T api node -e "fetch('http://127.0.0.1:3000/api/health').then(async r=>{console.log('API health HTTP '+r.status);process.exit(r.ok?0:1)}).catch(e=>{console.error(e);process.exit(1)})"
 
+            echo "==> Validando upstreams fixos do Nginx"
+            grep -Fq 'proxy_pass http://lm-pudins-api:3000/uploads/;' nginx.conf
+            grep -Fq 'proxy_pass http://lm-pudins-api:3000/api/;' nginx.conf
+            if grep -Eq 'proxy_pass[[:space:]]+http://api:3000/' nginx.conf; then
+              echo "ERRO: upstream antigo api:3000 encontrado no nginx.conf."
+              exit 1
+            fi
+
+            echo "==> Testando API pela rede interna a partir do frontend"
+            docker compose exec -T lm-pudins-page wget -q -O- http://lm-pudins-api:3000/api/health | grep -q '"status":"ok"'
+
+            echo "==> Testando proxy reverso do Nginx dentro do container"
+            docker compose exec -T lm-pudins-page wget -q -O- http://127.0.0.1/api/health | grep -q '"status":"ok"'
+
+            echo "==> Testando API pelo domínio público"
+            curl -fsS https://www.lmpudins.com.br/api/health | grep -q '"status":"ok"'
+
             echo "==> Importando produtos do arquivo-fonte para o PostgreSQL"
             docker compose exec -T api node scripts/seed-products.js
 
