@@ -244,3 +244,43 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!$('version-modal').classList.contains('hidden'))closeVersionForm();
   if(e.key==='Escape'&&!$('integration-modal').classList.contains('hidden'))closeIntegrationModal();
 });
+
+
+/* QR Code institucional do site */
+(()=>{
+ const preview=$('site-qr-preview'),fileInput=$('site-qr-logo'),logoPreview=$('site-qr-logo-preview');
+ if(!preview||!fileInput)return;
+ const siteUrl='https://www.lmpudins.com.br/';
+ let logo=null,qrCanvas=null;
+ function renderSiteQr(){
+  preview.replaceChildren();
+  const holder=document.createElement('div');
+  new QRCode(holder,{text:siteUrl,width:640,height:640,colorDark:'#160b0f',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+  const source=holder.querySelector('canvas');
+  if(!source){status('site-qr-status','Não foi possível gerar o QR Code.');return}
+  qrCanvas=document.createElement('canvas');qrCanvas.width=640;qrCanvas.height=640;
+  const ctx=qrCanvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,640,640);ctx.drawImage(source,0,0,640,640);
+  if(logo){
+   const side=142,pad=13,x=(640-side)/2,y=(640-side)/2;
+   ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(x-pad,y-pad,side+pad*2,side+pad*2,18);ctx.fill();
+   const ratio=Math.min(side/logo.width,side/logo.height),w=logo.width*ratio,h=logo.height*ratio;
+   ctx.drawImage(logo,x+(side-w)/2,y+(side-h)/2,w,h);
+  }
+  const visible=document.createElement('canvas');visible.width=320;visible.height=320;visible.style.width='100%';visible.style.maxWidth='320px';visible.style.height='auto';visible.getContext('2d').drawImage(qrCanvas,0,0,320,320);preview.append(visible);
+ }
+ fileInput.addEventListener('change',()=>{
+  const file=fileInput.files&&fileInput.files[0];if(!file)return;
+  if(!/^image\/(png|jpeg|webp)$/.test(file.type)){status('site-qr-status','Formato não suportado. Envie PNG, JPG ou WEBP.');fileInput.value='';return}
+  if(file.size>5*1024*1024){status('site-qr-status','O logo deve ter no máximo 5 MB.');fileInput.value='';return}
+  const reader=new FileReader();reader.onload=()=>{
+   const img=new Image();img.onload=()=>{logo=img;logoPreview.src=reader.result;logoPreview.style.display='block';renderSiteQr();status('site-qr-status','Logo aplicado ao centro do QR Code.')};
+   img.onerror=()=>status('site-qr-status','Não foi possível abrir a imagem selecionada.');img.src=reader.result;
+  };reader.readAsDataURL(file);
+ });
+ $('site-qr-remove-logo').addEventListener('click',()=>{logo=null;fileInput.value='';logoPreview.removeAttribute('src');logoPreview.style.display='none';renderSiteQr();status('site-qr-status','Logo removido.')});
+ $('site-qr-download').addEventListener('click',()=>{
+  if(!qrCanvas){status('site-qr-status','Aguarde a geração do QR Code.');return}
+  qrCanvas.toBlob(blob=>{if(!blob){status('site-qr-status','Não foi possível criar o PNG.');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='qrcode-lm-pudins.png';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);status('site-qr-status','QR Code PNG gerado.')},'image/png');
+ });
+ renderSiteQr();
+})();
