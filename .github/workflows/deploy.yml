@@ -63,6 +63,12 @@ jobs:
               cd "$SITE_DIR"
               git fetch origin
               git checkout "$DEPLOY_BRANCH"
+              if ! git diff --quiet HEAD -- nginx.conf; then
+                BACKUP_FILE="$HOME/lmpudins.com.br/nginx.conf.backup-$(date +%Y%m%d-%H%M%S)"
+                cp nginx.conf "$BACKUP_FILE"
+                echo "==> Alteracao local em nginx.conf preservada em $BACKUP_FILE"
+                git restore --source="origin/$DEPLOY_BRANCH" --staged --worktree -- nginx.conf
+              fi
               git pull --ff-only origin "$DEPLOY_BRANCH"
             else
               if [ -e "$SITE_DIR" ] && [ -n "$(find "$SITE_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
